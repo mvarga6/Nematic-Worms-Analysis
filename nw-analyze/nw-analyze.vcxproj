@@ -18,6 +18,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="nw-analyze.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8C0999EE-E119-4211-A815-67FBFD3AD767}</ProjectGuid>
     <RootNamespace>nw_analyze</RootNamespace>
