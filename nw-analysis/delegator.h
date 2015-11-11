@@ -15,7 +15,7 @@ public:
 	delegator(int argc, char *argv[]);
 	~delegator();
 
-	void executeAllTasks();
+	int executeAllTasks();
 
 private:
 

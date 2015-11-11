@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\analysis">
+      <UniqueIdentifier>{579ef598-f7ae-4130-ab27-c36475e1829b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="nw-analysis.cpp">
@@ -28,6 +31,9 @@
     </ClInclude>
     <ClInclude Include="analtask.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="follow.h">
+      <Filter>Source Files\analysis</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

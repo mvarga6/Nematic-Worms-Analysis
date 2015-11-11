@@ -31,8 +31,9 @@ struct Task
 	boost::thread thd;
 	AnalysisTask tsk;
 	std::string arg;
+	int argcount;
 
-	Task(AnalysisTask task, std::string args = ""){
+	Task(AnalysisTask task, int argc = 0, std::string args = ""){
 		tsk = task;
 		arg = args;
 	}
