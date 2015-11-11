@@ -19,7 +19,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="appdelegate.cpp" />
+    <ClCompile Include="master_main.cpp" />
     <ClCompile Include="nw-analyze.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="appdelegate.h" />
+    <ClInclude Include="calculator.hpp" />
+    <ClInclude Include="csv_write.hpp" />
+    <ClInclude Include="handy_math.hpp" />
+    <ClInclude Include="linked_list.hpp" />
+    <ClInclude Include="litterbox.hpp" />
+    <ClInclude Include="orientation_correlator.hpp" />
+    <ClInclude Include="orientation_hist.hpp" />
+    <ClInclude Include="simreplay_convert.hpp" />
+    <ClInclude Include="simreplay_types.hpp" />
+    <ClInclude Include="spatial_correlator.hpp" />
+    <ClInclude Include="velocity_auto_correlator.hpp" />
+    <ClInclude Include="xyzv_read_frame.hpp" />
+    <ClInclude Include="xyz_read_frame.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8C0999EE-E119-4211-A815-67FBFD3AD767}</ProjectGuid>
