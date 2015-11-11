@@ -22,6 +22,7 @@
     <ClCompile Include="appdelegate.cpp" />
     <ClCompile Include="master_main.cpp" />
     <ClCompile Include="nw-analyze.cpp" />
+    <ClCompile Include="param_set.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appdelegate.h" />
@@ -32,6 +33,8 @@
     <ClInclude Include="litterbox.hpp" />
     <ClInclude Include="orientation_correlator.hpp" />
     <ClInclude Include="orientation_hist.hpp" />
+    <ClInclude Include="pairs_data.hpp" />
+    <ClInclude Include="param_set.hpp" />
     <ClInclude Include="simreplay_convert.hpp" />
     <ClInclude Include="simreplay_types.hpp" />
     <ClInclude Include="spatial_correlator.hpp" />

@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iostream>
 
-#include "nwAnalysisDelegate.h"
+//#include "nwAnalysisDelegate.h"
 
 #include "csv_write.hpp"
 #include "xyz_read_frame.hpp"
