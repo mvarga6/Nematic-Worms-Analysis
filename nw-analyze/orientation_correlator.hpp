@@ -75,6 +75,13 @@ namespace nw
 		void orientationCorrelatorFunction();
 	};
 
+// -----------------------------------------------------------------------------------------------------------------
+
+	/*
+	*	Calculates an orientational correlation function using
+	*	members bin_size and max_dist to calculate the number of
+	*	necessary bins.  
+	*/
 	template <typename dataType>
 	void orientationCorrelator<dataType>::orientationCorrelatorFunction()
 	{
@@ -88,8 +95,7 @@ namespace nw
 		{
 			dataType r = pairs[i].dr;
 			if (r >= max_dist) continue;
-
-			count += 1;
+			else count += 1;
 
 			//.. find bin
 			int bin = int(abs(r) / bin_size);
