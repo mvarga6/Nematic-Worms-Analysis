@@ -35,6 +35,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "varden", "varden\varden.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nw-analyze", "nw-analyze\nw-analyze.vcxproj", "{8C0999EE-E119-4211-A815-67FBFD3AD767}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nw-analysis", "nw-analysis\nw-analysis.vcxproj", "{87C2B98C-0E76-46B5-817C-05F85EF73992}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -171,6 +173,12 @@ Global
 		{8C0999EE-E119-4211-A815-67FBFD3AD767}.Release|Win32.Build.0 = Release|Win32
 		{8C0999EE-E119-4211-A815-67FBFD3AD767}.Release|x64.ActiveCfg = Release|x64
 		{8C0999EE-E119-4211-A815-67FBFD3AD767}.Release|x64.Build.0 = Release|x64
+		{87C2B98C-0E76-46B5-817C-05F85EF73992}.Debug|Win32.ActiveCfg = Debug|Win32
+		{87C2B98C-0E76-46B5-817C-05F85EF73992}.Debug|Win32.Build.0 = Debug|Win32
+		{87C2B98C-0E76-46B5-817C-05F85EF73992}.Debug|x64.ActiveCfg = Debug|Win32
+		{87C2B98C-0E76-46B5-817C-05F85EF73992}.Release|Win32.ActiveCfg = Release|Win32
+		{87C2B98C-0E76-46B5-817C-05F85EF73992}.Release|Win32.Build.0 = Release|Win32
+		{87C2B98C-0E76-46B5-817C-05F85EF73992}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
