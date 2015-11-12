@@ -1,5 +1,9 @@
 #include "delegator.h"
+#include <sstream>
 
+// -----------------------------------------------------------------------------------
+// Returns a string of the char * array starting at index i and updates \p argc, 
+// the count of sub strings present until character ')' or string ") " is found.
 std::string grabsubargs(int& argc, char *argv[], int& i){
 	std::string tskarg = "";
 	std::string add = "";
@@ -10,6 +14,16 @@ std::string grabsubargs(int& argc, char *argv[], int& i){
 		argc++;
 	}
 	return tskarg;
+}
+
+// -----------------------------------------------------------------------------------
+// Returns a vector of all the sub strings in \p str.
+std::vector<std::string> parseintosubstrings(std::string& str){
+	std::vector<std::string> subs;
+	std::istringstream iss(str);
+	std::string sub;
+	while (iss >> sub) subs.push_back(sub);
+	return subs;
 }
 
 // -----------------------------------------------------------------------------------

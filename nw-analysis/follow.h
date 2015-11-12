@@ -29,12 +29,12 @@ namespace follow{
 
 	static int process_arg(std::string		&basename,
 		std::string		&foutbasename,
-		const int		argc,
-		char			*argv[],
+		std::vector<std::string> argv,
 		std::vector<int> &targets,
 		int				&sfid,
 		int				&efid)
 	{
+		int argc = argv.size();
 		for (int i = 1; i < argc; ++i)
 		{
 			std::string arg = argv[i];
@@ -70,7 +70,7 @@ namespace follow{
 			else if ((arg == "-t") || (arg == "--target"))
 			{
 				if (i + 1 < argc){
-					int assign = int(strtof(argv[i + 1], NULL));
+					int assign = int(strtof(argv[i + 1].c_str(), NULL));
 					targets.push_back(assign);
 					i++;
 				}
@@ -82,7 +82,7 @@ namespace follow{
 			}
 			else if ((arg == "-s") || (arg == "--start")){
 				if (i + 1 < argc){
-					sfid = int(strtod(argv[i + 1], NULL));
+					sfid = int(strtod(argv[i + 1].c_str(), NULL));
 					i++;
 				}
 				else {
@@ -92,7 +92,7 @@ namespace follow{
 			}
 			else if ((arg == "-e") || (arg == "--end")){
 				if (i + 1 < argc){
-					efid = int(strtod(argv[i + 1], NULL));
+					efid = int(strtod(argv[i + 1].c_str(), NULL));
 					i++;
 				}
 				else {
@@ -108,7 +108,7 @@ namespace follow{
 		}
 	}
 
-	int calculate(int argc, char* argv[])
+	int calculate(int argc, std::vector<std::string> argv)
 	{
 		//.. file i/o names
 		std::string finBaseName;
@@ -125,7 +125,7 @@ namespace follow{
 		std::vector<int> targetList;
 
 		//.. process command line arguments
-		process_arg(finBaseName, foutBaseName, argc, argv, targetList, startFileId, endFileId);
+		process_arg(finBaseName, foutBaseName, argv, targetList, startFileId, endFileId);
 
 		//.. create output file for each target
 		std::vector<std::ofstream*> fout;
