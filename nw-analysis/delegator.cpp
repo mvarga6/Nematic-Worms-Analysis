@@ -114,6 +114,14 @@ delegator::~delegator()
 
 // -----------------------------------------------------------------------------------
 
+int delegator::executeAllTasks(){
+	this->assignThreadedFunctions();
+	this->joinThreadedFunctions();
+	return EXIT_SUCCESS;
+}
+
+// -----------------------------------------------------------------------------------
+
 void delegator::assignThreadedFunctions(){
 	for (auto it : this->toDo){
 		switch (it->tsk){
@@ -126,4 +134,10 @@ void delegator::assignThreadedFunctions(){
 			std::cout << "launching 'gcorr' thread.\n";
 		}
 	}
+}
+
+// -----------------------------------------------------------------------------------
+
+void delegator::joinThreadedFunctions(){
+	for (auto it : this->toDo) it->thd.join();
 }

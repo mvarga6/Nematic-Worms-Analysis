@@ -21,6 +21,7 @@ public:
 private:
 
 	void assignThreadedFunctions();
+	void joinThreadedFunctions();
 	void displayUsage();
 };
 
