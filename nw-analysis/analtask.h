@@ -14,6 +14,7 @@ enum AnalysisTask
 	GTCORR,
 	HIGHLIGHT,
 	HISTO,
+	MOMENTUM,
 	PERSIST,
 	POFR,
 	PVT,

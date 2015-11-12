@@ -1,5 +1,7 @@
 #include "delegator.h"
 #include <sstream>
+#include "follow.h"
+#include "gcorr.h"
 
 // -----------------------------------------------------------------------------------
 // Returns a string of the char * array starting at index i and updates \p argc, 
@@ -60,6 +62,10 @@ delegator::delegator(int argc, char *argv[])
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::HISTO, subargc, subarg));
 		}
+		else if (arg == "--momentum( "){
+			subarg = grabsubargs(subargc, argv, i);
+			this->toDo.push_back(new Task(AnalysisTask::MOMENTUM, subargc, subarg));
+		}
 		else if (arg == "--persist( "){
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::PERSIST, subargc, subarg));
@@ -104,4 +110,20 @@ delegator::~delegator()
 {
 	for (int i = 0; i < toDo.size(); i++)
 		toDo.pop_back();
+}
+
+// -----------------------------------------------------------------------------------
+
+void delegator::assignThreadedFunctions(){
+	for (auto it : this->toDo){
+		switch (it->tsk){
+		case AnalysisTask::FOLLOW :
+			it->thd = boost::thread(&follow::calculate, parseintosubstrings(it->arg));
+			std::cout << "launching 'follow' thread.\n";
+			break;
+		case AnalysisTask::GCORR :
+			it->thd = boost::thread(&gcorr::calculate, parseintosubstrings(it->arg));
+			std::cout << "launching 'gcorr' thread.\n";
+		}
+	}
 }

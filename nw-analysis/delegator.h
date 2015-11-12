@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 #include "analtask.h"
 /*
 *	Used to interpret cmdline arguments and throw otf Boost threads
@@ -19,7 +20,7 @@ public:
 
 private:
 
-
+	void assignThreadedFunctions();
 	void displayUsage();
 };
 

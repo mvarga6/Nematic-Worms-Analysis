@@ -35,6 +35,9 @@
     <ClInclude Include="follow.h">
       <Filter>Source Files\analysis</Filter>
     </ClInclude>
+    <ClInclude Include="gcorr.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

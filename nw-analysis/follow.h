@@ -108,7 +108,7 @@ namespace follow{
 		}
 	}
 
-	int calculate(int argc, std::vector<std::string> argv)
+	int calculate(std::vector<std::string> argv)
 	{
 		//.. file i/o names
 		std::string finBaseName;
