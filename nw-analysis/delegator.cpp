@@ -132,6 +132,9 @@ void delegator::assignThreadedFunctions(){
 		case AnalysisTask::GCORR :
 			it->thd = boost::thread(&gcorr::calculate, parseintosubstrings(it->arg));
 			std::cout << "launching 'gcorr' thread.\n";
+			break;
+		default :
+			std::cout << "cannot launch thread for 'unknown' typed task.\n";
 		}
 	}
 }
@@ -140,4 +143,13 @@ void delegator::assignThreadedFunctions(){
 
 void delegator::joinThreadedFunctions(){
 	for (auto it : this->toDo) it->thd.join();
+}
+
+// -----------------------------------------------------------------------------------
+
+void delegator::displayUsage(){
+	std::cout << "Usage:\n\n";
+	std::cout << "example:\t>> nw-analysis --follow( -i in -o out.csv -t 100 -s 1 -e 3 )\n\n";
+	std::cout << "Commands to the process 'follow' must be included inside parenthesis\n";
+	std::cout << "and with the first '(' not spaced from process name, e.g. '--process(... )\n";
 }
