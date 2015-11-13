@@ -29,7 +29,8 @@ std::vector<std::string> parseIntoSubStrings(std::string& str){
 }
 
 // -----------------------------------------------------------------------------------
-
+// Parses through raw command line arguments and forms container of new tasked to 
+// be execuated.  Only access touching parenthesis syntax.
 delegator::delegator(int argc, char *argv[])
 {
 	//.. process command line arguments
@@ -105,7 +106,7 @@ delegator::delegator(int argc, char *argv[])
 }
 
 // -----------------------------------------------------------------------------------
-
+// Destorys all toDo tasks.
 delegator::~delegator()
 {
 	for (int i = 0; i < toDo.size(); i++)
@@ -113,7 +114,8 @@ delegator::~delegator()
 }
 
 // -----------------------------------------------------------------------------------
-
+// Assigns all queued tasks to a boost thread, runs them, then waits for them to
+// complete.  NOTE:  return values from threads is not supported yet.
 int delegator::executeAllTasks(){
 	this->assignThreadedFunctions();
 	this->joinThreadedFunctions();
@@ -121,7 +123,8 @@ int delegator::executeAllTasks(){
 }
 
 // -----------------------------------------------------------------------------------
-
+// Traverses through toDo list and initiates the boost::threads in each task with
+// the proper calculate function reference and parameters.
 void delegator::assignThreadedFunctions(){
 	for (auto it : this->toDo){
 		switch (it->tsk){
@@ -195,13 +198,13 @@ void delegator::assignThreadedFunctions(){
 }
 
 // -----------------------------------------------------------------------------------
-
+// Asks all toDo threads to join.
 void delegator::joinThreadedFunctions(){
 	for (auto it : this->toDo) it->thd.join();
 }
 
 // -----------------------------------------------------------------------------------
-
+// Prints to console the usage of this nw-analysis program.
 void delegator::displayUsage(){
 	std::cout << "Usage:\n\n";
 	std::cout << "example:\t>> nw-analysis --follow( -i in -o out.csv -t 100 -s 1 -e 3 )\n\n";

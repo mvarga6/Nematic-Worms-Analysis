@@ -1,5 +1,6 @@
 #pragma once
 
+//.. include all required files storing the calculation functions.
 #include "follow.h"
 #include "gcorr.h"
 #include "gofr.h"

@@ -2,10 +2,9 @@
 #include <vector>
 #include <string>
 #include "boost\thread.hpp"
-/*
-*	Defines the types of calculations to easy through them
-*	around and use.
-*/
+
+//	Defines the types of calculations to easy through them
+//	around and use.
 enum AnalysisTask
 {
 	FOLLOW,
@@ -26,19 +25,27 @@ enum AnalysisTask
 	UNKNOWN
 };
 
-//.. Groups the thread and type of task together
+// Groups the thread and type of task together
 struct Task
 {
+	//.. thread to execute calculate within
 	boost::thread thd;
-	AnalysisTask tsk;
-	std::string arg;
-	int argcount;
 
+	//.. type of task requested by user at cmdline
+	AnalysisTask tsk;
+
+	//.. arguments for task calculate
+	std::string arg;
+
+	//.. count of arguments to task
+	int argcount;
+	
+	//.. init with task type, arg count, and string of args
 	Task(AnalysisTask task, int argc = 0, std::string args = ""){
 		tsk = task;
 		arg = args;
 	}
 };
 
-//.. define a type for storing tasks
+// define a type for storing tasks
 typedef std::vector<Task* > Tasks;
