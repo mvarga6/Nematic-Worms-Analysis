@@ -27,7 +27,7 @@ namespace momentum {
 			<< "Options:\n"
 			<< "\t-h,--help\t\tShow this help message\n"
 			<< "\t-t,--dt\t\tSet 'dt' from simulation\n"
-			<< "\t\-f,--framestep\t\tSet number of steps per frame\n"
+			<< "\t-f,--framestep\t\tSet number of steps per frame\n"
 			<< "\t-s,--start\t\tDefine id of first input file (default=1)\n"
 			<< "\t-e,--end\t\tDefine id of last input file (default=1)\n"
 			<< "If no in/out options specified, default output file name is 'unnamed.txt'\n"
