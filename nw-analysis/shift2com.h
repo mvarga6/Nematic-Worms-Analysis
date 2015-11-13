@@ -1,4 +1,12 @@
-#pragma once
+// Nematic Worm Analysis
+// 11.11.14
+
+/*
+'follow' stand-alone analysis program
+Track the positions of a list of particles into individual files.
+*/
+
+#define _USE_MATH_DEFINES
 
 #include <iostream>
 #include <fstream>
@@ -9,9 +17,9 @@
 #include <vector>
 #include <math.h>
 
-namespace follow{
+namespace shift2com {
 
-	const std::string funcName = "follow";
+	const std::string funcName = "shift2com";
 
 	static void show_usage(std::string name)
 	{
@@ -21,7 +29,6 @@ namespace follow{
 			<< "\t-o,--output\t\tOutput files base name\n"
 			<< "Options:\n"
 			<< "\t-h,--help\t\tShow this help message\n"
-			<< "\t-t,--target\tAdd a target particle to follow\n"
 			<< "\t-s,--start\t\tDefine id of first input file (default=1)\n"
 			<< "\t-e,--end\t\tDefine id of last input file (default=1)\n"
 			<< "If no in/out options specified, default output file name is 'unnamed.txt'\n"
@@ -32,11 +39,10 @@ namespace follow{
 	static int process_arg(std::string		&basename,
 		std::string		&foutbasename,
 		std::vector<std::string> argv,
-		std::vector<int> &targets,
 		int				&sfid,
 		int				&efid)
 	{
-		int argc = argv.size();
+		const int argc = argv.size();
 		for (int i = 0; i < argc; ++i)
 		{
 			std::string arg = argv[i];
@@ -69,19 +75,6 @@ namespace follow{
 					return 3;
 				}
 			}
-			else if ((arg == "-t") || (arg == "--target"))
-			{
-				if (i + 1 < argc){
-					int assign = int(strtof(argv[i + 1].c_str(), NULL));
-					targets.push_back(assign);
-					i++;
-				}
-				else
-				{
-					std::cerr << "--output option requires one argument." << std::endl;
-					return 4;
-				}
-			}
 			else if ((arg == "-s") || (arg == "--start")){
 				if (i + 1 < argc){
 					sfid = int(strtod(argv[i + 1].c_str(), NULL));
@@ -89,7 +82,7 @@ namespace follow{
 				}
 				else {
 					std::cerr << "--input option requires one argument." << std::endl;
-					return 5;
+					return 4;
 				}
 			}
 			else if ((arg == "-e") || (arg == "--end")){
@@ -99,7 +92,7 @@ namespace follow{
 				}
 				else {
 					std::cerr << "--input option requires one argument." << std::endl;
-					return 6;
+					return 5;
 				}
 			}
 			else
@@ -118,35 +111,13 @@ namespace follow{
 		std::string foutBaseName;
 
 		//.. special stuff needed for entirety of calculation
-		float * x0 = { 0 };
-		float * y0 = { 0 };
-		float * xTot = { 0 };
-		float * yTot = { 0 };
 		int		startFileId = 1;
 		int		endFileId = 1;
 		int		numFrame = 0;
-		std::vector<int> targetList;
 
-		//.. process command line sub arguments
-		int process_arg_status = process_arg(finBaseName, foutBaseName, argv, targetList, startFileId, endFileId);
-		if ( process_arg_status != 0) return process_arg_status;
-
-		//.. create output file for each target
-		std::vector<std::ofstream*> fout;
-		const unsigned int numTargets = targetList.size();
-		for (int i = 0; i < numTargets; i++)
-		{
-			std::ostringstream ofname;
-			ofname << foutBaseName << targetList[i] << ".csv";
-			fout.push_back(new std::ofstream(ofname.str(), std::ios::out));
-		}
-
-		//.. confirm sizes match
-		if (numTargets != fout.size())
-		{
-			std::cerr << "Error linking targets to files\n";
-			return 10;
-		}
+		//.. process command line arguments
+		int process_arg_status = process_arg(finBaseName, foutBaseName, argv, startFileId, endFileId);
+		if (process_arg_status != 0) return process_arg_status;
 
 		//.. loop through all files
 		for (int fid = startFileId; fid <= endFileId; fid++)
@@ -157,18 +128,21 @@ namespace follow{
 			std::ifstream fin(ifname.str(), std::ios::in);
 			if (!fin.is_open())
 			{
-				std::cerr << "Error opening file " << ifname.str() << std::endl
+				std::cerr << "Error opening file" << std::endl
 					<< "Check for correct input name and directory\n" << std::endl;
 				show_usage(funcName);
 				return 20;
 			}
 
+			//.. make output file for input file to be converted into
+			std::ostringstream ofname;
+			ofname << foutBaseName << fid << ".xyz";
+			std::ofstream fout(ofname.str(), std::ios::out);
+
 			//.. stuff
 			int		numParticles;
 			int		numPerWorm;
 			int		numWorms;
-			double	numWorms2;
-			char	charTrash;
 			float	k2spring;
 			float	hx;
 			float	hy;
@@ -185,100 +159,117 @@ namespace follow{
 				if (numParticles == 0) break;
 
 				numWorms = numParticles / numPerWorm;
-				numWorms2 = numWorms*numWorms;
 
-				float * x = new float[numTargets];
-				float * y = new float[numTargets];
+				//.. data containers
+				char  * c = new char[numParticles];
+				float * x = new float[numParticles];
+				float * y = new float[numParticles];
+
+				//.. corner of box
+				char  * bc = new char[4];
+				float * bx = new float[4];
+				float * by = new float[4];
+
+				//.. center of frame position
+				const float cofX = hx / 2.0f;
+				const float cofY = hy / 2.0f;
 
 				// Read in X,Y,Z positions for frame
 				std::cout << "\nReading frame " << numFrame << " from " << ifname.str() << std::endl;
 				int t = 0;
 				for (int i = 0; i < numParticles; i++)
 				{
-					//.. is i in targets list?
-					bool found = false;
-					for (int c = 0; c < numTargets; c++)
-					{
-						if (targetList[c] == i) found = true;
-					}
-
-					if (found)
-					{
-						fin >> charTrash >> x[t] >> y[t] >> floatTrash;
-						std::cout << "\nTarget # " << t << " found at { " << x[t] << "," << y[t] << " }";
-						t++;
-					}
-					else
-						fin >> charTrash >> floatTrash >> floatTrash >> floatTrash;
+					fin >> c[i] >> x[i] >> y[i] >> floatTrash;
 				}
 
 				// Dump corner particles at end of file to trash
-				for (int t = 0; t < 4; t++)
-					fin >> charTrash >> floatTrash >> floatTrash >> floatTrash;
+				for (int i = 0; i < 4; i++)
+					fin >> bc[i] >> bx[i] >> by[i] >> floatTrash;
 
-				//.. alloc only at first frame
-				if (numFrame == 0)
+				// Calculate average position in mapped coords
+				float gx_ave = 0.0f;
+				float fx_ave = 0.0f;
+				float gy_ave = 0.0f;
+				float fy_ave = 0.0f;
+				for (int i = 0; i < numParticles; i++)
 				{
-					x0 = new float[numTargets];
-					y0 = new float[numTargets];
-					xTot = new float[numTargets];
-					yTot = new float[numTargets];
-					for (int i = 0; i < numTargets; i++)
-					{
-						x0[i] = x[i];
-						y0[i] = y[i];
-						xTot[i] = 0.0f;
-						yTot[i] = 0.0f;
-					}
+					float thetax = (x[i] / hx) * 2.0f * M_PI;
+					gx_ave += cos(thetax);
+					fx_ave += sin(thetax);
+
+					float thetay = (y[i] / hy) * 2.0f * M_PI;
+					gy_ave += cos(thetay);
+					fy_ave += sin(thetay);
+				}
+				gx_ave /= float(numParticles);
+				fx_ave /= float(numParticles);
+				gy_ave /= float(numParticles);
+				fy_ave /= float(numParticles);
+
+				const float thetax_ave = atan2f(-fx_ave, -gx_ave) + M_PI;
+				const float thetay_ave = atan2f(-fy_ave, -gy_ave) + M_PI;
+
+				//.. convert back to cartesian coords
+				float comX = (hx * thetax_ave) / (2.0f * M_PI);
+				float comY = (hy * thetay_ave) / (2.0f * M_PI);
+
+				//.. check that center of mass is in box
+				if (comX < 0 || comX > hx || comY < 0 || comY > hy)
+				{
+					std::cout << "WARNING:\tCenter of mass outside of system bounds.\n";
+					std::cout << "\t\tMoving through periodic boundary.\n";
+
+					std::cout << "\t\tcomX = " << comX << " --> ";
+					if (comX > hx)	 comX -= hx;
+					if (comX < 0.0f) comX += hx;
+					std::cout << comX << std::endl;
+
+					std::cout << "\t\tcomY = " << comY << " --> ";
+					if (comY > hy)	 comY -= hy;
+					if (comY < 0.0f) comY += hy;
+					std::cout << comY << std::endl;
 				}
 
-				// Calculate Average Properties
-				for (int p = 0; p < numTargets; p++)
+				//.. determine the necessary shift of center of frame
+				const float shiftX = cofX - comX;
+				const float shiftY = cofY - comY;
+
+				//.. shift and apply periodic boundaries
+				for (int i = 0; i < numParticles; i++)
 				{
-					//.. raw distance travelled
-					float dx = x[p] - x0[p];
-					float dy = y[p] - y0[p];
+					x[i] += shiftX;
+					y[i] += shiftY;
 
-					//.. boundary conditions
-					if (dx > hx / 2.0f) dx -= hx;
-					if (dx < -hx / 2.0f) dx += hx;
-					if (dy > hy / 2.0f) dy -= hy;
-					if (dy < -hy / 2.0f) dy += hy;
-
-					//.. add to cummulative distance vector
-					xTot[p] += dx;
-					yTot[p] += dy;
+					if (x[i] > hx) x[i] -= hx;
+					if (x[i] < 0.0f) x[i] += hx;
+					if (y[i] > hy) y[i] -= hy;
+					if (y[i] < 0.0f) y[i] += hy;
 				}
 
-				//.. print to output files
-				for (int i = 0; i < numTargets; i++)
+				//.. print to output file
+				fout << numParticles + 4 << std::endl;
+				fout << numPerWorm << " " << k2spring << " " << hx << " " << hy << std::endl;
+				for (int i = 0; i < numParticles; i++)
 				{
-					*(fout[i]) << xTot[i] << ", " << yTot[i] << std::endl;
+					fout << c[i] << " " << x[i] << " " << y[i] << " 0\n";
 				}
 
-				//.. store for next frame
-				for (int i = 0; i < numTargets; i++)
+				//.. print box corners
+				for (int i = 0; i < 4; i++)
 				{
-					x0[i] = x[i];
-					y0[i] = y[i];
+					fout << bc[i] << " " << bx[i] << " " << by[i] << " 0\n";
 				}
 
+				delete[] c;
 				delete[] x;
 				delete[] y;
+				delete[] bc;
+				delete[] bx;
+				delete[] by;
 				numFrame++;
 			}
 			fin.close();
-		}
-
-		//.. delete containers
-		delete[] x0;
-		delete[] y0;
-		delete[] xTot;
-		delete[] yTot;
-		for (int i = 0; i < numTargets; i++)
-		{
-			fout[i]->close();
-			delete fout[i];
+			fout.close();
 		}
 
 		return EXIT_SUCCESS;

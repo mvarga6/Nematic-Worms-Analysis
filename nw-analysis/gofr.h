@@ -1,5 +1,3 @@
-#pragma once
-
 // Nematic Worm Analysis
 // 11.11.14
 
@@ -13,12 +11,12 @@
 #include <vector>
 #include <math.h>
 
-namespace gcorr {
+namespace gofr {
 
 	const float _PI = 3.14159265359f;
 	const float _2PI = 2 * _PI;
 
-	const std::string funcName = "gcorr";
+	const std::string funcName = "gofr";
 
 	static void show_usage(std::string name)
 	{
@@ -45,7 +43,7 @@ namespace gcorr {
 		int				&sfid,
 		int				&efid)
 	{
-		int argc = argv.size();
+		const int argc = argv.size();
 		for (int i = 0; i < argc; ++i){
 			std::string arg = argv[i];
 			if ((arg == "-h") || (arg == "--help")){
@@ -141,9 +139,7 @@ namespace gcorr {
 
 		//.. process command line sub arguments
 		int process_arg_status = process_arg(finBaseName, fout, argv, intRange, binWidth, startFileId, endFileId);
-		if (process_arg_status != 0){
-			return process_arg_status;
-		}
+		if (process_arg_status != 0) return process_arg_status;
 
 		//.. number of bins and first line of data file ****************************************
 
@@ -201,8 +197,8 @@ namespace gcorr {
 
 				numWorms = numParticles / numPerWorm;
 				numWorms2 = numWorms*numWorms;
-				float hxo2 = hx / 2.0;
-				float hyo2 = hy / 2.0;
+				const float hxo2 = hx / 2.0;
+				const float hyo2 = hy / 2.0;
 
 				//.. make linked list ********************************************************
 				nxcell = int(ceil(hx / dcell));
@@ -213,7 +209,6 @@ namespace gcorr {
 
 				float * x = new float[numParticles];
 				float * y = new float[numParticles];
-				float * theta = new float[numParticles];
 				int * ptz = new int[numParticles];
 				int * heads = new int[ncell];
 
@@ -224,40 +219,16 @@ namespace gcorr {
 
 				// Read in X,Y,Z positions for frame and set linked list *********************
 				std::cout << "Reading frame " << numFrame << " from " << ifname.str() << std::endl;
-				for (int w = 0; w < numWorms; w++)
+				for (int i = 0; i < numParticles; i++)
 				{
-					//.. read in postions for worm w *****************************************
+					fin >> charTrash >> x[i] >> y[i] >> floatTrash;
 
-					for (int p = 0; p < numPerWorm; p++)
-					{
-						int i = w*numPerWorm + p;
-						fin >> charTrash >> x[i] >> y[i] >> floatTrash;
-					}
-
-					//.. calculate theta and set LL cells ************************************
-
-					for (int p = 0; p < numPerWorm; p++)
-					{
-						int i = w*numPerWorm + p;
-						if (p < numParticles - 1)
-						{
-							float dx = x[i + 1] - x[i];
-							float dy = y[i + 1] - y[i];
-							float mag = sqrtf(dx*dx + dy*dy);
-							theta[i] = atan2f(dy / mag, dx / mag);
-						}
-						else
-						{
-							theta[i] = theta[i - 1];
-						}
-
-						//.. put into linked list
-						int icell = int(floor(x[i] / dcell));
-						int jcell = int(floor(y[i] / dcell));
-						int scell = jcell*nxcell + icell;
-						ptz[i] = heads[scell];
-						heads[scell] = i;
-					}
+					//.. put into linked list
+					int icell = int(x[i] / dcell);
+					int jcell = int(y[i] / dcell);
+					int scell = jcell*nxcell + icell;
+					ptz[i] = heads[scell];
+					heads[scell] = i;
 				}
 
 				// Dump corner particles at end of file to trash *****************************
@@ -268,8 +239,9 @@ namespace gcorr {
 				// Components of calculation *************************************************
 
 				std::vector<float> G;
-				G.resize(numBin + 1, 0.0f);
 				float aveOver = 1;
+				for (int i = 0; i <= numBin; i++)
+					G.push_back(0.0f);
 
 				//.. calculate using linked list *********************************************
 
@@ -319,19 +291,11 @@ namespace gcorr {
 										//.. find bin
 										float r = sqrtf(r2);
 										int b = int(r / binWidth);
-										if ((b >= 0) && (b < numBin))
+										if ((b >= 0) && (b <= numBin))
 										{
-											//.. relative angle between worms
-											float dtheta = theta[ii] - theta[jj];
-
-											//.. 2pi boundary conditons
-											if (dtheta > _PI) dtheta -= _2PI;
-											if (dtheta < -_PI) dtheta += _2PI;
-
-											//.. calculate <n(r)*n(r+dr)>
-											float vv = abs(cosf(dtheta));
+											//.. count
 											aveOver += 1;
-											G[b] += vv;
+											G.at(b) += 1;
 										}
 									}
 									jj = ptz[jj];
@@ -360,7 +324,6 @@ namespace gcorr {
 				//.. eliminate dynamic memory ***********************************************
 				delete[] x;
 				delete[] y;
-				delete[] theta;
 				delete[] ptz;
 				delete[] heads;
 			} // End of File

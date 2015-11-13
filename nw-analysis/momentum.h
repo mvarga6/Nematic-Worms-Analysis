@@ -1,4 +1,9 @@
-#pragma once
+// Nematic Worm Analysis
+// 11.11.14
+
+/*
+MomentumSpace stand-alone analysis program
+*/
 
 #include <iostream>
 #include <fstream>
@@ -9,19 +14,20 @@
 #include <vector>
 #include <math.h>
 
-namespace follow{
+namespace momentum {
 
-	const std::string funcName = "follow";
+	const std::string funcName = "momentum-space";
 
 	static void show_usage(std::string name)
 	{
 		std::cerr << "\a";
 		std::cerr << "Usage: " << name << " <option(s)> file...\n"
 			<< "\t-i,--input\t\tAdd input file\n"
-			<< "\t-o,--output\t\tOutput files base name\n"
+			<< "\t-o,--output\t\tOutput file name\n"
 			<< "Options:\n"
 			<< "\t-h,--help\t\tShow this help message\n"
-			<< "\t-t,--target\tAdd a target particle to follow\n"
+			<< "\t-t,--dt\t\tSet 'dt' from simulation\n"
+			<< "\t\-f,--framestep\t\tSet number of steps per frame\n"
 			<< "\t-s,--start\t\tDefine id of first input file (default=1)\n"
 			<< "\t-e,--end\t\tDefine id of last input file (default=1)\n"
 			<< "If no in/out options specified, default output file name is 'unnamed.txt'\n"
@@ -30,13 +36,14 @@ namespace follow{
 	}
 
 	static int process_arg(std::string		&basename,
-		std::string		&foutbasename,
+		std::ofstream	&fout,
 		std::vector<std::string> argv,
-		std::vector<int> &targets,
+		float			&dt,
+		float			&steps,
 		int				&sfid,
 		int				&efid)
 	{
-		int argc = argv.size();
+		const int argc = argv.size();
 		for (int i = 0; i < argc; ++i)
 		{
 			std::string arg = argv[i];
@@ -60,7 +67,7 @@ namespace follow{
 			else if ((arg == "-o") || (arg == "--output"))
 			{
 				if (i + 1 < argc){
-					foutbasename = argv[i + 1];
+					fout.open(argv[i + 1]);
 					i++;
 				}
 				else
@@ -69,17 +76,30 @@ namespace follow{
 					return 3;
 				}
 			}
-			else if ((arg == "-t") || (arg == "--target"))
+			else if ((arg == "-t") || (arg == "--dt"))
 			{
 				if (i + 1 < argc){
-					int assign = int(strtof(argv[i + 1].c_str(), NULL));
-					targets.push_back(assign);
+					float assign = strtof(argv[i + 1].c_str(), NULL);
+					dt = assign;
 					i++;
 				}
 				else
 				{
 					std::cerr << "--output option requires one argument." << std::endl;
 					return 4;
+				}
+			}
+			else if ((arg == "-f") || (arg == "--framesteps"))
+			{
+				if (i + 1 < argc){
+					float assign = strtof(argv[i + 1].c_str(), NULL);
+					steps = assign;
+					i++;
+				}
+				else
+				{
+					std::cerr << "--output option requires one argument." << std::endl;
+					return 5;
 				}
 			}
 			else if ((arg == "-s") || (arg == "--start")){
@@ -89,7 +109,7 @@ namespace follow{
 				}
 				else {
 					std::cerr << "--input option requires one argument." << std::endl;
-					return 5;
+					return 6;
 				}
 			}
 			else if ((arg == "-e") || (arg == "--end")){
@@ -99,12 +119,12 @@ namespace follow{
 				}
 				else {
 					std::cerr << "--input option requires one argument." << std::endl;
-					return 6;
+					return 7;
 				}
 			}
 			else
 			{
-				foutbasename = funcName;
+				fout.open(funcName + ".csv");
 				return 0;
 			}
 		}
@@ -113,40 +133,25 @@ namespace follow{
 
 	int calculate(std::vector<std::string> argv)
 	{
-		//.. file i/o names
+		//std::vector<std::ifstream*> fin;
 		std::string finBaseName;
-		std::string foutBaseName;
+		std::ofstream fout;
 
-		//.. special stuff needed for entirety of calculation
+		//.. special stuff needed for calculation
+		//std::vector<float> rvt;
 		float * x0 = { 0 };
 		float * y0 = { 0 };
-		float * xTot = { 0 };
-		float * yTot = { 0 };
 		int		startFileId = 1;
 		int		endFileId = 1;
 		int		numFrame = 0;
-		std::vector<int> targetList;
+		float	dt = 0.001f;
+		float	stepsPerFrame = 80000.0f;
 
 		//.. process command line sub arguments
-		int process_arg_status = process_arg(finBaseName, foutBaseName, argv, targetList, startFileId, endFileId);
-		if ( process_arg_status != 0) return process_arg_status;
+		int process_arg_status = process_arg(finBaseName, fout, argv, dt, stepsPerFrame, startFileId, endFileId);
+		if (process_arg_status != 0) return process_arg_status;
 
-		//.. create output file for each target
-		std::vector<std::ofstream*> fout;
-		const unsigned int numTargets = targetList.size();
-		for (int i = 0; i < numTargets; i++)
-		{
-			std::ostringstream ofname;
-			ofname << foutBaseName << targetList[i] << ".csv";
-			fout.push_back(new std::ofstream(ofname.str(), std::ios::out));
-		}
-
-		//.. confirm sizes match
-		if (numTargets != fout.size())
-		{
-			std::cerr << "Error linking targets to files\n";
-			return 10;
-		}
+		float Dt = dt * stepsPerFrame;
 
 		//.. loop through all files
 		for (int fid = startFileId; fid <= endFileId; fid++)
@@ -157,7 +162,7 @@ namespace follow{
 			std::ifstream fin(ifname.str(), std::ios::in);
 			if (!fin.is_open())
 			{
-				std::cerr << "Error opening file " << ifname.str() << std::endl
+				std::cerr << "Error opening file" << std::endl
 					<< "Check for correct input name and directory\n" << std::endl;
 				show_usage(funcName);
 				return 20;
@@ -187,30 +192,13 @@ namespace follow{
 				numWorms = numParticles / numPerWorm;
 				numWorms2 = numWorms*numWorms;
 
-				float * x = new float[numTargets];
-				float * y = new float[numTargets];
+				float * x = new float[numParticles];
+				float * y = new float[numParticles];
 
 				// Read in X,Y,Z positions for frame
-				std::cout << "\nReading frame " << numFrame << " from " << ifname.str() << std::endl;
-				int t = 0;
+				std::cout << "Reading frame " << numFrame << " from " << ifname.str() << std::endl;
 				for (int i = 0; i < numParticles; i++)
-				{
-					//.. is i in targets list?
-					bool found = false;
-					for (int c = 0; c < numTargets; c++)
-					{
-						if (targetList[c] == i) found = true;
-					}
-
-					if (found)
-					{
-						fin >> charTrash >> x[t] >> y[t] >> floatTrash;
-						std::cout << "\nTarget # " << t << " found at { " << x[t] << "," << y[t] << " }";
-						t++;
-					}
-					else
-						fin >> charTrash >> floatTrash >> floatTrash >> floatTrash;
-				}
+					fin >> charTrash >> x[i] >> y[i] >> floatTrash;
 
 				// Dump corner particles at end of file to trash
 				for (int t = 0; t < 4; t++)
@@ -219,21 +207,19 @@ namespace follow{
 				//.. alloc only at first frame
 				if (numFrame == 0)
 				{
-					x0 = new float[numTargets];
-					y0 = new float[numTargets];
-					xTot = new float[numTargets];
-					yTot = new float[numTargets];
-					for (int i = 0; i < numTargets; i++)
+					x0 = new float[numParticles];
+					y0 = new float[numParticles];
+					for (int i = 0; i < numParticles; i++)
 					{
 						x0[i] = x[i];
 						y0[i] = y[i];
-						xTot[i] = 0.0f;
-						yTot[i] = 0.0f;
 					}
 				}
 
 				// Calculate Average Properties
-				for (int p = 0; p < numTargets; p++)
+				float Vx = 0.0f;
+				float Vy = 0.0f;
+				for (int p = 0; p < numParticles; p++)
 				{
 					//.. raw distance travelled
 					float dx = x[p] - x0[p];
@@ -246,18 +232,15 @@ namespace follow{
 					if (dy < -hy / 2.0f) dy += hy;
 
 					//.. add to cummulative distance vector
-					xTot[p] += dx;
-					yTot[p] += dy;
+					Vx += dx / Dt;
+					Vy += dy / Dt;
 				}
 
-				//.. print to output files
-				for (int i = 0; i < numTargets; i++)
-				{
-					*(fout[i]) << xTot[i] << ", " << yTot[i] << std::endl;
-				}
+				//.. print px py to file
+				fout << Vx / numParticles << ", " << Vy / numParticles << std::endl;
 
 				//.. store for next frame
-				for (int i = 0; i < numTargets; i++)
+				for (int i = 0; i < numParticles; i++)
 				{
 					x0[i] = x[i];
 					y0[i] = y[i];
@@ -270,16 +253,9 @@ namespace follow{
 			fin.close();
 		}
 
-		//.. delete containers
 		delete[] x0;
 		delete[] y0;
-		delete[] xTot;
-		delete[] yTot;
-		for (int i = 0; i < numTargets; i++)
-		{
-			fout[i]->close();
-			delete fout[i];
-		}
+		fout.close();
 
 		return EXIT_SUCCESS;
 	}

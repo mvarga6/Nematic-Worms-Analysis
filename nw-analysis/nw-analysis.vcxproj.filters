@@ -38,6 +38,48 @@
     <ClInclude Include="gcorr.h">
       <Filter>Source Files\analysis</Filter>
     </ClInclude>
+    <ClInclude Include="gofr.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="gtcorr.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="highlight.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="histo.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="momentum.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="persistence.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="pofr.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="pvt.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="shift2com.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="svden.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="svt.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="sxyzc.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="varden.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="analysis_funcs.h">
+      <Filter>Source Files\analysis</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

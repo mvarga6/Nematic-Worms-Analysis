@@ -116,25 +116,42 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Boost\include\boost-1_58;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Boost\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>cp "$(OutDir)$(TargetName)$(TargetExt)" "C:\Users\Mike\Google Drive\Nematic Worms Project\bin\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="delegator.cpp" />
     <ClCompile Include="nw-analysis.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="analysis_funcs.h" />
     <ClInclude Include="delegator.h" />
     <ClInclude Include="analtask.h" />
     <ClInclude Include="follow.h" />
     <ClInclude Include="gcorr.h" />
+    <ClInclude Include="gofr.h" />
+    <ClInclude Include="gtcorr.h" />
+    <ClInclude Include="highlight.h" />
+    <ClInclude Include="histo.h" />
+    <ClInclude Include="momentum.h" />
+    <ClInclude Include="persistence.h" />
+    <ClInclude Include="pofr.h" />
+    <ClInclude Include="pvt.h" />
+    <ClInclude Include="shift2com.h" />
+    <ClInclude Include="svden.h" />
+    <ClInclude Include="svt.h" />
+    <ClInclude Include="sxyzc.h" />
+    <ClInclude Include="varden.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
