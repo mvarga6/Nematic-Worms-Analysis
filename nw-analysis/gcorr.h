@@ -254,7 +254,7 @@ namespace gcorr {
 						{
 							float dx = x[i + 1] - x[i];
 							float dy = y[i + 1] - y[i];
-							float mag = sqrtf(dx*dx + dy*dy);
+							float mag = sqrt(dx*dx + dy*dy);
 							theta[i] = atan2f(dy / mag, dx / mag);
 						}
 						else
@@ -328,7 +328,7 @@ namespace gcorr {
 									if (r2 <= intRange2)
 									{
 										//.. find bin
-										float r = sqrtf(r2);
+										float r = sqrt(r2);
 										int b = int(r / binWidth);
 										if ((b >= 0) && (b < numBin))
 										{

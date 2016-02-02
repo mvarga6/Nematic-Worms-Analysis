@@ -221,7 +221,7 @@ namespace gtcorr {
 						{
 							float dx = x[i + 1] - x[i];
 							float dy = y[i + 1] - y[i];
-							float mag = sqrtf(dx*dx + dy*dy);
+							float mag = sqrt(dx*dx + dy*dy);
 							frameTheta.push_back(atan2f(dy / mag, dx / mag));
 						}
 						else

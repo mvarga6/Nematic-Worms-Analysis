@@ -289,7 +289,7 @@ namespace gofr {
 									if (r2 <= intRange2)
 									{
 										//.. find bin
-										float r = sqrtf(r2);
+										float r = sqrt(r2);
 										int b = int(r / binWidth);
 										if ((b >= 0) && (b <= numBin))
 										{

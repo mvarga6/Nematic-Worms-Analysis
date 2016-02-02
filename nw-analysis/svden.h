@@ -516,7 +516,7 @@ namespace svden {
 				if (numBin > maxNumBin) maxNumBin = numBin;
 
 				//.. print to console
-				totalOrderParameter = 2 * std::sqrtf(std::powf((totalCos2Sum / totalAveOver - 0.5f), 2.0f) + std::powf(totalCosSinSum / totalAveOver, 2.0f));
+				totalOrderParameter = 2 * std::sqrt(std::pow((totalCos2Sum / totalAveOver - 0.5f), 2.0f) + std::powf(totalCosSinSum / totalAveOver, 2.0f));
 				std::cout << "S = " << totalOrderParameter << std::endl;
 				fout.flush();
 				//fout << numFrame++ << ", " << totalOrderParameter << std::endl;

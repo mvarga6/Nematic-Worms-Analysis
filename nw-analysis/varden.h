@@ -281,7 +281,7 @@ namespace varden {
 						sqrtSum += dn*dn;
 					}
 
-					DN.push_back(sqrtf(sqrtSum / float(nbox - 1)));
+					DN.push_back(sqrt(sqrtSum / float(nbox - 1)));
 				}
 
 				//.. make printable vector
