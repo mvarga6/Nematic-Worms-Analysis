@@ -31,8 +31,7 @@ std::vector<std::string> parseIntoSubStrings(std::string& str){
 // -----------------------------------------------------------------------------------
 // Parses through raw command line arguments and forms container of new tasked to 
 // be execuated.  Only access touching parenthesis syntax.
-delegator::delegator(int argc, char *argv[])
-{
+delegator::delegator(int argc, char *argv[]){
 	//.. process command line arguments
 	for (int i = 1; i < argc; ++i){
 		std::string arg = argv[i];
@@ -107,8 +106,7 @@ delegator::delegator(int argc, char *argv[])
 
 // -----------------------------------------------------------------------------------
 // Destorys all toDo tasks.
-delegator::~delegator()
-{
+delegator::~delegator(){
 	for (int i = 0; i < toDo.size(); i++)
 		toDo.pop_back();
 }
@@ -127,7 +125,11 @@ int delegator::executeAllTasks(){
 // the proper calculate function reference and parameters.
 void delegator::assignThreadedFunctions(){
 	for (auto it : this->toDo){
-		switch (it->tsk){
+		if (it->tsk != AnalysisTask::UNKNOWN)
+			it->thd = boost::thread(Implement.at(it->tsk), 
+							parseIntoSubStrings(it->arg));
+
+		/*switch (it->tsk){
 		case AnalysisTask::FOLLOW :
 			it->thd = boost::thread(&follow::calculate, parseIntoSubStrings(it->arg));
 			std::cout << "launching '" << follow::funcName <<"' thread.\n";
@@ -193,7 +195,7 @@ void delegator::assignThreadedFunctions(){
 			break;
 		default :
 			std::cout << "default thread launch is not supported.\n";
-		}
+		}*/
 	}
 }
 

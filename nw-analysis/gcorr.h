@@ -13,13 +13,17 @@
 #include <vector>
 #include <math.h>
 
+// --------------------------------------------------------------------------------
+// This encapsolates a spacial correlation function calculation and things needed
+// for easy use.
 namespace gcorr {
 
+	// ------------------------------
 	const float _PI = 3.14159265359f;
 	const float _2PI = 2 * _PI;
-
+	// ------------------------------------
 	const std::string funcName = "gcorr";
-
+	// -----------------------------------------------
 	static void show_usage(std::string name)
 	{
 		std::cerr << "\a";
@@ -36,8 +40,8 @@ namespace gcorr {
 			<< "and input file must follow program instance\n"
 			<< std::endl;
 	}
-
-	static int process_arg(std::string		&basename,
+	// -----------------------------------------------
+	static int process_arg(std::string &basename,
 		std::ofstream 	&fout,
 		std::vector<std::string> argv,
 		float 			&range,
@@ -140,7 +144,13 @@ namespace gcorr {
 		float	binWidth = 1.0f;
 
 		//.. process command line sub arguments
-		int process_arg_status = process_arg(finBaseName, fout, argv, intRange, binWidth, startFileId, endFileId);
+		int process_arg_status = process_arg(finBaseName, 
+			fout, 
+			argv, 
+			intRange, 
+			binWidth, 
+			startFileId, 
+			endFileId);
 		if (process_arg_status != 0){
 			return process_arg_status;
 		}
@@ -223,7 +233,8 @@ namespace gcorr {
 					heads[i] = -1;
 
 				// Read in X,Y,Z positions for frame and set linked list *********************
-				std::cout << "Reading frame " << numFrame << " from " << ifname.str() << std::endl;
+				std::cout << "Reading frame " << numFrame 
+					<< " from " << ifname.str() << std::endl;
 				for (int w = 0; w < numWorms; w++)
 				{
 					//.. read in postions for worm w *****************************************
