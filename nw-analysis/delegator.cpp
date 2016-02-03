@@ -32,6 +32,11 @@ std::vector<std::string> parseIntoSubStrings(std::string& str){
 // Parses through raw command line arguments and forms container of new tasked to 
 // be execuated.  Only access touching parenthesis syntax.
 delegator::delegator(int argc, char *argv[]){
+	
+	//.. print what was recieved from cmdline
+	printf("\nCommand line arguments receivced:");
+	for (int i = 0; i < argc; i++) printf("\n%i. %s", i, argv[i]);
+	
 	//.. process command line arguments
 	for (int i = 1; i < argc; ++i){
 		std::string arg = argv[i];
