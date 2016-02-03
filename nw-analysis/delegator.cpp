@@ -11,7 +11,7 @@ std::string grabsubargs(int& argc, char *argv[], int& i){
 	std::string tskarg = "";
 	std::string add = "";
 	argc = 0;
-	while ((add = std::string(argv[++i])) != "!!"){
+	while ((add = std::string(argv[++i])) != "--"){
 		tskarg = tskarg + add + " ";
 		argc++;
 	}
