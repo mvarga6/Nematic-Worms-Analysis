@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "boost\thread.hpp"
+#include <boost/thread.hpp>
 
 //	Defines the types of calculations to easy through them
 //	around and use.
