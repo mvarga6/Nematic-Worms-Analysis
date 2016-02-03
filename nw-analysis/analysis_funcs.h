@@ -28,7 +28,7 @@
 #include "analtask.h"
 #include <map>
 #include <vector>
-#include "boost\assign.hpp"
+#include <boost/assign.hpp>
 
 using namespace boost::assign;
 typedef int(*Calculation)(std::vector<std::string>);

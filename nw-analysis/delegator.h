@@ -1,6 +1,6 @@
 #pragma once
 
-#include "boost\thread.hpp"
+#include <boost/thread.hpp>
 #include <string>
 #include <iostream>
 #include "analtask.h"
