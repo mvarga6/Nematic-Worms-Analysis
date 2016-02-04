@@ -43,11 +43,11 @@ delegator::delegator(int argc, char *argv[]){
 		std::string subarg;
 		int subargc = 0;
 
-		if (arg == "--follow"){
+		if (arg == "--thickness"){
 			subarg = grabsubargs(subargc, argv, i);
-			this->toDo.push_back(new Task(AnalysisTask::FOLLOW, subargc, subarg));
+			this->toDo.push_back(new Task(AnalysisTask::THICKNESS_3D, subargc, subarg));
 		}
-		else if (arg == "--gcorr"){
+		/*else if (arg == "--gcorr"){
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::GCORR, subargc, subarg));
 		}
@@ -102,7 +102,7 @@ delegator::delegator(int argc, char *argv[]){
 		else if (arg == "--varden"){
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::VARDEN, subargc, subarg));
-		}
+		}*/
 		else if ((arg == "-h") || (arg == "--help")) 
 			this->displayUsage();
 		else this->toDo.push_back(new Task(AnalysisTask::UNKNOWN, 0, "unknown"));

@@ -80,6 +80,9 @@
     <ClInclude Include="analysis_funcs.h">
       <Filter>Source Files\analysis</Filter>
     </ClInclude>
+    <ClInclude Include="thickness.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

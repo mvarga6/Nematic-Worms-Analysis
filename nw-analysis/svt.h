@@ -237,7 +237,7 @@ namespace svt {
 					float y1 = y[0];
 					float x2 = x[numPerWorm - 1];
 					float y2 = y[numPerWorm - 1];
-
+						
 					delete[] x;
 					delete[] y;
 
@@ -261,7 +261,7 @@ namespace svt {
 					}
 					//.. calculate theta for worm w
 					theta[w] = std::atan2(dy, dx);
-
+ 
 					// Periodic Boundaries on COM
 					float Xcom = (x1 + x2) / 2.0;
 					float Ycom = (y1 + y2) / 2.0;
