@@ -141,7 +141,6 @@
     <ClInclude Include="gcorr.h" />
     <ClInclude Include="gofr.h" />
     <ClInclude Include="gtcorr.h" />
-    <ClInclude Include="NWXYZIO.h" />
     <ClInclude Include="highlight.h" />
     <ClInclude Include="histo.h" />
     <ClInclude Include="momentum.h" />
