@@ -144,6 +144,7 @@
     <ClInclude Include="highlight.h" />
     <ClInclude Include="histo.h" />
     <ClInclude Include="momentum.h" />
+    <ClInclude Include="NWXYZIO.h" />
     <ClInclude Include="persistence.h" />
     <ClInclude Include="pofr.h" />
     <ClInclude Include="pvt.h" />
