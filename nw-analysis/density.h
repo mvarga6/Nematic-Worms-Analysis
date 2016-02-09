@@ -26,7 +26,7 @@ namespace density_3d {
 			<< "Options:\n"
 			<< "\t-h,--help\t\tShow this help message\n"
 			<< "\t-w,--boxwidth\t\tSet width of integration cells\n"
-			<< "\t-d,--dimension\t\tSet width of integration cells\n"
+			<< "\t-d,--dimension\t\tSet normal of grid plane (default=2:z-axis)\n"
 			<< "\t-l,--layerpos\t\tPosition of layer to calculate thickness about\n"
 			<< "\t-s,--start\t\tDefine id of first input file (default=1)\n"
 			<< "\t-e,--end\t\tDefine id of last input file (default=1)\n"
