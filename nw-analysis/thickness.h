@@ -21,12 +21,13 @@ namespace thickness_3d {
 	{
 		std::cerr << "\a";
 		std::cerr << "Usage: " << name << " <option(s)> file...\n"
-			<< "\t-i,--input\t\tAdd input file\n"
-			<< "\t-o,--output\t\tOutput file name\n"
+			<< "\t-i,--input\t\tAdd input file (w/o ext)\n"
+			<< "\t-o,--output\t\tOutput file name (w/o ext)\n"
 			<< "Options:\n"
 			<< "\t-h,--help\t\tShow this help message\n"
 			<< "\t-w,--boxwidth\t\tSet width of integration cells\n"
 			<< "\t-d,--dimension\t\tSet width of integration cells\n"
+			<< "\t-l,--layerpos\t\tPosition of layer to calculate thickness about\n"
 			<< "\t-s,--start\t\tDefine id of first input file (default=1)\n"
 			<< "\t-e,--end\t\tDefine id of last input file (default=1)\n"
 			<< "If no in/out options specified, default output file name is 'unnamed.txt'\n"
@@ -37,9 +38,10 @@ namespace thickness_3d {
 	// ------------------------------------------------
 	// Process cmdline args and assign as needed.
 	static int process_arg(std::string		&basename,
-		std::ofstream	&fout,
+		std::string		&outbasename,
 		std::vector<std::string> argv,
 		float			&boxwidth,
+		float			&layerpos,
 		int				&dim,
 		int				&sfid,
 		int				&efid)
@@ -70,7 +72,7 @@ namespace thickness_3d {
 			else if ((arg == "-o") || (arg == "--output"))
 			{
 				if (i + 1 < argc){
-					fout.open(argv[i + 1]);
+					outbasename  = argv[i + 1];
 					i++;
 				}
 				else
@@ -85,6 +87,20 @@ namespace thickness_3d {
 				if (i + 1 < argc){
 					float assign = strtof(argv[i + 1].c_str(), NULL);
 					boxwidth = assign;
+					i++;
+				}
+				else
+				{
+					std::cerr << "--output option requires one argument." << std::endl;
+					return 4;
+				}
+			}
+			// ------------------------------------------
+			else if ((arg == "-l") || (arg == "--layerpos"))
+			{
+				if (i + 1 < argc){
+					float assign = strtof(argv[i + 1].c_str(), NULL);
+					layerpos = assign;
 					i++;
 				}
 				else
@@ -132,7 +148,7 @@ namespace thickness_3d {
 			// ------------------------------------------
 			else
 			{
-				fout.open(funcName + ".csv");
+				outbasename = funcName;
 				return 0;
 			}
 		}
@@ -140,38 +156,70 @@ namespace thickness_3d {
 	}
 
 	// -------------------------------------------------
+	// calculate root mean square displacement from layer
+	// in uv-plane (rms of Z(u,v) )
+	void rms_of_layer(float *u, float *v, 
+		float *Z, const float& layerZ, 
+		const int nparts, const float& boxwidth, 
+		const int udim, const int vdim,
+		float **result){
+		int b1, b2;
+		const float averager = 1.0f / (float)nparts;
+		for (int i = 0; i < nparts; i++){
+			b1 = (int)(u[i] / boxwidth);
+			b2 = (int)(v[i] / boxwidth);
+
+			if (b1 < 0 || b2 < 0) continue;
+			if (b1 >= udim || b2 >= vdim) continue;
+
+			result[b1][b2] += averager;
+		}
+	}
+
+	// -------------------------------------------------
 	// Run calculation
 	int calculate(std::vector<std::string> argv){
 
 		std::string finBaseName;
-		std::ofstream fout;
-		float * x0 = { 0 };
-		float * y0 = { 0 };
+		std::string foutBaseName;
+		float * x = { 0 };
+		float * y = { 0 };
+		float * z = { 0 };
 		float	boxWidth = 2.0f;
-		int		startFileId = 1;
-		int		endFileId = 1;
+		float	layerPos = 0.0f;
+		int		startFileId = -1;
+		int		endFileId = -1;
 		int		numFrame = 0;
 		int		dim = 2; // Z by default
 
 		//.. process and assign cmdline args
 		int process_arg_status = process_arg(finBaseName, 
-			fout, 
+			foutBaseName, 
 			argv, 
 			boxWidth, 
+			layerPos,
 			dim, 
 			startFileId, 
 			endFileId);
-		if (process_arg_status != 0) return process_arg_status;
+		if (process_arg_status != 0) 
+			return process_arg_status;
 
-		//.. loop through all files
+		//.. open output files
+		std::ofstream fxyz(foutBaseName + ".xyzc", std::ios::out);
+		std::ofstream fcsv(foutBaseName + ".csv", std::ios::out);
+		if (!fxyz.is_open() || !fcsv.is_open())
+			return 10;
+
+		//.. loop through all files (or just once when -1 & -1)
 		for (int fid = startFileId; fid <= endFileId; fid++)
 		{
 			//.. make sure it's open first
 			std::ostringstream ifname;
-			ifname << finBaseName << fid << ".xyz";
+			ifname << finBaseName;
+			if (startFileId >= 0) ifname << fid;
+			ifname << ".xyz";
 			std::ifstream fin(ifname.str(), std::ios::in);
-			if (!fin.is_open())
-			{
+			if (!fin.is_open()){
 				std::cerr << "Error opening file" << std::endl
 					<< "Check for correct input name and directory\n" << std::endl;
 				show_usage(funcName);
@@ -181,8 +229,6 @@ namespace thickness_3d {
 			//.. stuff
 			int		numParticles;
 			int		numPerWorm;
-			int		numWorms;
-			double	numWorms2;
 			char	charTrash;
 			float	k2spring;
 			float	hx;
@@ -193,80 +239,85 @@ namespace thickness_3d {
 			while (!fin.eof())
 			{
 				numParticles = 4; // Deals with case of black line at end of file.
-				fin >> numParticles;
-				fin >> numPerWorm >> k2spring >> hx >> hy;
+				std::string line;
+				//fin >> numParticles;
+				std::getline(fin, line);
+				numParticles = (int)std::strtod(line.c_str(), NULL);
+				std::cout << "\nParts: " << numParticles;
+				std::getline(fin, line);
+				std::cout << "\nComment line: " << line.c_str();
 				numParticles -= 4;
-
+				
+				// stop when zero particles
 				if (numParticles == 0) break;
 
-				numWorms = numParticles / numPerWorm;
-				numWorms2 = numWorms*numWorms;
-
-				float * x = new float[numParticles];
-				float * y = new float[numParticles];
+				// allocate memory
+				x = new float[numParticles];
+				y = new float[numParticles];
+				z = new float[numParticles];
 
 				// Read in X,Y,Z positions for frame
-				std::cout << "Reading frame " << numFrame << " from " << ifname.str() << std::endl;
-				for (int i = 0; i < numParticles; i++)
-					fin >> charTrash >> x[i] >> y[i] >> floatTrash;
+				std::cout << "\nReading frame " << numFrame << " from " << ifname.str() << std::endl;
+				//std::stringstream row;
+				for (int i = 0; i < numParticles; i++){
+					std::getline(fin, line);
+					std::stringstream row(line);
+					row >> charTrash >> x[i] >> y[i] >> z[i];
+				}
 
-				// Dump corner particles at end of file to trash
-				for (int t = 0; t < 4; t++)
-					fin >> charTrash >> floatTrash >> floatTrash >> floatTrash;
+				// Dump 3 corner particles at end of file to trash
+				for (int t = 0; t < 3; t++){
+					std::getline(fin, line);
+					std::stringstream row(line);
+					row >> charTrash >> floatTrash >> floatTrash >> floatTrash;
+				}
 
-				//.. alloc only at first frame
-				if (numFrame == 0)
-				{
-					x0 = new float[numParticles];
-					y0 = new float[numParticles];
-					for (int i = 0; i < numParticles; i++)
-					{
-						x0[i] = x[i];
-						y0[i] = y[i];
+				// Get box size from fourth
+				std::getline(fin, line);
+				std::stringstream row(line);
+				row >> charTrash >> hx >> hy >> floatTrash;
+
+				// Make mean square displayment in desired dim
+				const int xdim = (int)ceil(hx / boxWidth);
+				const int ydim = (int)ceil(hy / boxWidth);
+				float ** rmsqr_ = new float *[xdim];
+				for (int i = 0; i < xdim; i++){
+					rmsqr_[i] = new float[ydim];
+					for (int j = 0; j < ydim; j++){
+						rmsqr_[i][j] = 0.0f; // init to 0
 					}
 				}
+				
+				// Calculate root-mean-square displacement from layer position
+				switch (dim) {
 
-				// Calculate Average Properties
-				float Vx = 0.0f;
-				float Vy = 0.0f;
-				for (int p = 0; p < numParticles; p++)
-				{
-					//.. raw distance travelled
-					float dx = x[p] - x0[p];
-					float dy = y[p] - y0[p];
-
-					//.. boundary conditions
-					if (dx > hx / 2.0f) dx -= hx;
-					if (dx < -hx / 2.0f) dx += hx;
-					if (dy > hy / 2.0f) dy -= hy;
-					if (dy < -hy / 2.0f) dy += hy;
-
-					//.. add to cummulative distance vector
-					Vx += dx / Dt;
-					Vy += dy / Dt;
+				case 0: // Slice of y-z plane
+					rms_of_layer(y, z, x, layerPos, numParticles, boxWidth, ydim, 1, rmsqr_);
+				case 1: // Slice of x-z plane
+					rms_of_layer(x, z, y, layerPos, numParticles, boxWidth, xdim, 1, rmsqr_);
+				case 2: // Slice of x-y place
+					rms_of_layer(x, y, z, layerPos, numParticles, boxWidth, xdim, ydim, rmsqr_);
+				}
+				
+				// Print to files
+				fxyz << xdim * ydim << std::endl;
+				fxyz << "Frame " << numFrame++ << std::endl;
+				for (int j = 0; j < ydim; j++){
+					for (int i = 0; i < xdim; i++){
+						fxyz << "A " << i << " " << j << " 0 " << rmsqr_[i][j] << std::endl;
+						fcsv << rmsqr_[i][j] << ", ";
+					}
+					fcsv << std::endl;
 				}
 
-				//.. print px py to file
-				fout << Vx / numParticles << ", " << Vy / numParticles << std::endl;
-
-				//.. store for next frame
-				for (int i = 0; i < numParticles; i++)
-				{
-					x0[i] = x[i];
-					y0[i] = y[i];
-				}
-
-				delete[] x;
-				delete[] y;
-				numFrame++;
+				for (int i = 0; i < xdim; i++)
+					delete[] rmsqr_[i];
+				delete[] rmsqr_;
 			}
 			fin.close();
 		}
-
-		delete[] x0;
-		delete[] y0;
-		fout.close();
-
+		fxyz.close();
+		fcsv.close();
 		return EXIT_SUCCESS;
 	}
 }

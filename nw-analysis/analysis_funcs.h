@@ -3,6 +3,7 @@
 // ------------------------------------------------
 // include all required files storing 
 // the calculation functions.
+// 2D
 #include "follow.h"
 #include "gcorr.h"
 #include "gofr.h"
@@ -18,6 +19,9 @@
 #include "svt.h"
 #include "sxyzc.h"
 #include "varden.h"
+
+// 3D
+#include "thickness.h"
 
 // -------------------------------------------------
 // map the AnalysisTasks to functions
@@ -51,4 +55,5 @@ static const std::map< AnalysisTask, Calculation > Implement = map_list_of
 	( AnalysisTask::SVDEN,		&svden::calculate )
 	( AnalysisTask::SVT,		&svt::calculate )
 	( AnalysisTask::SXYZC,		&sxyzc::calculate )
-	( AnalysisTask::VARDEN,		&varden::calculate );
+	( AnalysisTask::VARDEN,		&varden::calculate )
+	( AnalysisTask::THICKNESS_3D, &thickness_3d::calculate );
