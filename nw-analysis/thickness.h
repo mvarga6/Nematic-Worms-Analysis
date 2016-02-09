@@ -265,11 +265,11 @@ namespace thickness_3d {
 			//.. each frame loop
 			while (!fin.eof())
 			{
-				//numParticles = 4; // Deals with case of black line at end of file.
+				//.. read frame header
 				std::string line;
 				if (!std::getline(fin, line)) break;
 				numParticles = (int)std::strtod(line.c_str(), NULL);
-				printf("\n\n%s: Parts: %i", funcName.c_str(), numParticles);
+				printf("\n%s: Parts: %i", funcName.c_str(), numParticles);
 				if (!std::getline(fin, line)) break;
 				printf("\n\n%s: Comment line: %s", funcName.c_str(), line.c_str());
 				numParticles -= 4;
@@ -279,11 +279,8 @@ namespace thickness_3d {
 				y = new float[numParticles];
 				z = new float[numParticles];
 
-				// stop when zero particles
-				//if (numParticles == 0) break;
-
 				// Read in X,Y,Z positions for frame
-				printf("\n%s: Reading frame %i from %s", funcName.c_str(), numFrame, ifname.str());
+				printf("\n%s: Reading frame %i from %s", funcName.c_str(), numFrame, ifname.str().c_str());
 				for (int i = 0; i < numParticles; i++){
 					std::getline(fin, line);
 					std::stringstream row(line);
