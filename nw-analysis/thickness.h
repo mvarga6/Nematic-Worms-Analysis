@@ -269,38 +269,12 @@ namespace thickness {
 			//.. each frame loop
 			while (!fin.eof())
 			{
-				////.. read frame header
-				//std::string line;
-				//if (!std::getline(fin, line)) break;
-				//numParticles = (int)std::strtod(line.c_str(), NULL);
-				//printf("\n%s: Parts: %i", funcName.c_str(), numParticles);
-				//if (!std::getline(fin, line)) break;
-				//printf("\n\n%s: Comment line: %s", funcName.c_str(), line.c_str());
-				//numParticles -= 4;
-				
 				// allocate memory
 				x = new float[numParticles];
 				y = new float[numParticles];
 				z = new float[numParticles];
 				util::simReplay::readParticles(fin, fileProps, x, y, z);
 				printf("\n%s: Frame %i read from %s", funcName.c_str(), numFrame, ifname.str().c_str());
-				//// Read in X,Y,Z positions for frame
-				//printf("\n%s: Reading frame %i from %s", funcName.c_str(), numFrame, ifname.str().c_str());
-				//for (int i = 0; i < numParticles; i++){
-				//	std::getline(fin, line);
-				//	std::stringstream row(line);
-				//	row >> charTrash >> x[i] >> y[i] >> z[i];
-				//}
-				//// Dump 3 corner particles at end of file to trash
-				//for (int t = 0; t < 3; t++){
-				//	std::getline(fin, line);
-				//	std::stringstream row(line);
-				//	row >> charTrash >> floatTrash >> floatTrash >> floatTrash;
-				//}
-				//// Get box size from fourth
-				//std::getline(fin, line);
-				//std::stringstream row(line);
-				//row >> charTrash >> hx >> hy >> floatTrash;
 
 				// Make mean square displayment in desired dim
 				const int xdim = (int)ceil(hx / boxWidth);
