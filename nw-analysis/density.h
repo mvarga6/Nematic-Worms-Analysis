@@ -12,9 +12,9 @@
 #include <vector>
 #include <math.h>
 // -------------------------------
-namespace thickness_3d {
-	const std::string funcName = "layer-thickness";
-	
+namespace density_3d {
+	const std::string funcName = "layer-density";
+
 	// --------------------------------------------
 	// Prints to user the program usage.
 	static void show_usage(std::string name)
@@ -34,7 +34,7 @@ namespace thickness_3d {
 			<< "and input file must follow program instance\n"
 			<< std::endl;
 	}
-	
+
 	// ------------------------------------------------
 	// Process cmdline args and assign as needed.
 	static int process_arg(std::string		&basename,
@@ -72,7 +72,7 @@ namespace thickness_3d {
 			else if ((arg == "-o") || (arg == "--output"))
 			{
 				if (i + 1 < argc){
-					outbasename  = argv[i + 1];
+					outbasename = argv[i + 1];
 					i++;
 				}
 				else
@@ -158,23 +158,13 @@ namespace thickness_3d {
 	// -------------------------------------------------
 	// calculate root mean square displacement from layer
 	// in uv-plane (rms of Z(u,v) )
-	void rms_of_layer(float *u, float *v, 
-		float *Z, const float& layerZ, 
-		const int nparts, const float& boxwidth, 
+	void density_of_layer(float *u, float *v,
+		float *Z, const float& layerZ,
+		const int nparts, const float& boxwidth,
 		const int udim, const int vdim,
 		float **result){
-		
-		//.. tmp memory for counting in each square
-		int **cnts = new int*[udim];
-		for (int i = 0; i < udim; i++){
-			cnts[i] = new int[vdim];
-			for (int j = 0; j < vdim; j++){
-				cnts[i][j] = 1;
-			}
-		}
-
-		//.. loop and calcuate r2 sum
 		int b1, b2;
+		const float averager = 1.0f / (float)nparts;
 		for (int i = 0; i < nparts; i++){
 			b1 = (int)(u[i] / boxwidth);
 			b2 = (int)(v[i] / boxwidth);
@@ -182,25 +172,8 @@ namespace thickness_3d {
 			if (b1 < 0 || b2 < 0) continue;
 			if (b1 >= udim || b2 >= vdim) continue;
 
-			//.. calculate rms from layer
-			result[b1][b2] += (Z[i] - layerZ)*(Z[i] - layerZ);
-			cnts[b1][b2]++;
+			result[b1][b2] += averager;
 		}
-
-		//.. turn result into sqrt of average in box
-		for (int i = 0; i < udim; i++){
-			for (int j = 0; j < vdim; j++){
-				float ans = result[i][j] / float(cnts[i][j]);
-				ans = std::sqrt(ans);
-				result[i][j] = ans;
-			}
-		}
-
-		//.. free tmp memory
-		for (int i = 0; i < udim; i++){
-			delete[] cnts[i];
-		}
-		delete[] cnts;
 	}
 
 	// -------------------------------------------------
@@ -220,15 +193,15 @@ namespace thickness_3d {
 		int		dim = 2; // Z by default
 
 		//.. process and assign cmdline args
-		int process_arg_status = process_arg(finBaseName, 
-			foutBaseName, 
-			argv, 
-			boxWidth, 
+		int process_arg_status = process_arg(finBaseName,
+			foutBaseName,
+			argv,
+			boxWidth,
 			layerPos,
-			dim, 
-			startFileId, 
+			dim,
+			startFileId,
 			endFileId);
-		if (process_arg_status != 0) 
+		if (process_arg_status != 0)
 			return process_arg_status;
 
 		//.. open output files
@@ -274,7 +247,7 @@ namespace thickness_3d {
 				std::getline(fin, line);
 				std::cout << "\nComment line: " << line.c_str();
 				numParticles -= 4;
-				
+
 				// allocate memory
 				x = new float[numParticles];
 				y = new float[numParticles];
@@ -314,18 +287,18 @@ namespace thickness_3d {
 						rmsqr_[i][j] = 0.0f; // init to 0
 					}
 				}
-				
+
 				// Calculate root-mean-square displacement from layer position
 				switch (dim) {
 
 				case 0: // Slice of y-z plane
-					rms_of_layer(y, z, x, layerPos, numParticles, boxWidth, ydim, 1, rmsqr_);
+					density_of_layer(y, z, x, layerPos, numParticles, boxWidth, ydim, 1, rmsqr_);
 				case 1: // Slice of x-z plane
-					rms_of_layer(x, z, y, layerPos, numParticles, boxWidth, xdim, 1, rmsqr_);
+					density_of_layer(x, z, y, layerPos, numParticles, boxWidth, xdim, 1, rmsqr_);
 				case 2: // Slice of x-y place
-					rms_of_layer(x, y, z, layerPos, numParticles, boxWidth, xdim, ydim, rmsqr_);
+					density_of_layer(x, y, z, layerPos, numParticles, boxWidth, xdim, ydim, rmsqr_);
 				}
-				
+
 				// Print to files
 				fxyz << xdim * ydim << std::endl;
 				fxyz << "Frame " << numFrame++ << std::endl;

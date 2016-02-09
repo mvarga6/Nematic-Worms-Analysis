@@ -22,6 +22,7 @@
 
 // 3D
 #include "thickness.h"
+#include "density.h"
 
 // -------------------------------------------------
 // map the AnalysisTasks to functions
@@ -56,4 +57,5 @@ static const std::map< AnalysisTask, Calculation > Implement = map_list_of
 	( AnalysisTask::SVT,		&svt::calculate )
 	( AnalysisTask::SXYZC,		&sxyzc::calculate )
 	( AnalysisTask::VARDEN,		&varden::calculate )
-	( AnalysisTask::THICKNESS_3D, &thickness_3d::calculate );
+	( AnalysisTask::THICKNESS_3D, &thickness_3d::calculate )
+	( AnalysisTask::DENSITY_3D, &density_3d::calculate );
