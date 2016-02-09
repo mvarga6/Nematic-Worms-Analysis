@@ -9,6 +9,7 @@ enum AnalysisTask
 {
 	THICKNESS_3D,
 	DENSITY_3D,
+	S_3D,
 	FOLLOW,
 	GCORR,
 	GOFR,

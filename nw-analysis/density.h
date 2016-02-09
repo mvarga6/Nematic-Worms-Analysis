@@ -220,8 +220,8 @@ namespace density_3d {
 			ifname << ".xyz";
 			std::ifstream fin(ifname.str(), std::ios::in);
 			if (!fin.is_open()){
-				std::cerr << "Error opening file" << std::endl
-					<< "Check for correct input name and directory\n" << std::endl;
+				std::cerr << std::endl << funcName << ": Error opening file\n"
+					<< funcName << ": Check for correct input name and directory";
 				show_usage(funcName);
 				return 20;
 			}
@@ -238,14 +238,13 @@ namespace density_3d {
 			//.. each frame loop
 			while (!fin.eof())
 			{
-				numParticles = 4; // Deals with case of black line at end of file.
+				//numParticles = 4; // Deals with case of black line at end of file.
 				std::string line;
-				//fin >> numParticles;
-				std::getline(fin, line);
+				if (!std::getline(fin, line)) break;
 				numParticles = (int)std::strtod(line.c_str(), NULL);
-				std::cout << "\nParts: " << numParticles;
-				std::getline(fin, line);
-				std::cout << "\nComment line: " << line.c_str();
+				printf("\n\n%s: Parts: %i", funcName.c_str(), numParticles);
+				if (!std::getline(fin, line)) break;
+				printf("\n\n%s: Comment line: %s", funcName.c_str(), line.c_str());
 				numParticles -= 4;
 
 				// allocate memory
@@ -254,11 +253,10 @@ namespace density_3d {
 				z = new float[numParticles];
 
 				// stop when zero particles
-				if (numParticles == 0) break;
+				//if (numParticles == 0) break;
 
 				// Read in X,Y,Z positions for frame
-				std::cout << "\nReading frame " << numFrame << " from " << ifname.str() << std::endl;
-				//std::stringstream row;
+				printf("\n%s: Reading frame %i from %s", funcName.c_str(), numFrame, ifname.str());
 				for (int i = 0; i < numParticles; i++){
 					std::getline(fin, line);
 					std::stringstream row(line);
@@ -313,11 +311,14 @@ namespace density_3d {
 				for (int i = 0; i < xdim; i++)
 					delete[] rmsqr_[i];
 				delete[] rmsqr_;
+				printf("\n%s: Frame memory deleted.", funcName.c_str());
 			}
 			fin.close();
+			printf("\n%s: Input file closed.", funcName.c_str());
 		}
 		fxyz.close();
 		fcsv.close();
+		printf("\n%s: Output files closed.", funcName.c_str());
 		return EXIT_SUCCESS;
 	}
 }

@@ -16,29 +16,29 @@ namespace sxyzc {
 	class n {
 	public:
 
-		n(void){
+		inline n(void){
 			nx = 0;
 			ny = 0;
 			mag = 0;
 		}
-		n(float x, float y){
+		inline n(float x, float y){
 			nx = x;
 			ny = y;
 			mag = std::sqrt(nx*nx + ny*ny);
 			cosT = std::cos(atan(ny / nx));
 		}
 
-		void set(float x, float y){
+		inline void set(float x, float y){
 			nx = x;
 			ny = y;
 			mag = std::sqrt(nx*nx + ny*ny);
 			cosT = std::cos(atan(ny / nx));
 		}
 
-		float& getnx(void){ return nx; }
-		float& getny(void){ return ny; }
+		inline float& getnx(void){ return nx; }
+		inline float& getny(void){ return ny; }
 
-		float operator*(const n& rhs){
+		inline float operator*(const n& rhs){
 			return (this->nx*rhs.nx + this->ny*rhs.ny);
 		}
 
