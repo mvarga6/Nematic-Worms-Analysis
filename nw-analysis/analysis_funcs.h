@@ -58,4 +58,5 @@ static const std::map< AnalysisTask, Calculation > Implement = map_list_of
 	( AnalysisTask::SXYZC,		&sxyzc::calculate )
 	( AnalysisTask::VARDEN,		&varden::calculate )
 	( AnalysisTask::THICKNESS_3D, &thickness::calculate_3d )
-	( AnalysisTask::DENSITY_3D, &density::calculate_3d );
+	( AnalysisTask::DENSITY_3D, &density::calculate_3d )
+	( AnalysisTask::GOFR_3D,	&gofr::calculate_3d );

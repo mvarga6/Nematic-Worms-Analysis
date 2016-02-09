@@ -1,6 +1,8 @@
+#pragma once
 // Nematic Worm Analysis
-// 11.11.14
-
+// 2.9.16
+// Spatial Correlation Functions 2D and 3D
+// Mike Varga
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -429,16 +431,27 @@ namespace gofr {
 	***************************************************/
 	int calculate_3d(std::vector<std::string> argv){
 
-		std::string finBaseName;
-		std::string foutBaseName;
-		float * x = { 0 };
-		float * y = { 0 };
-		float * z = { 0 };
-		float	binWidth = 1.0f;
-		float	range = 20.0f;
-		int		startFileId = -1;
-		int		endFileId = -1;
-		int		numFrame = 0;
+		std::string finBaseName; //input file base name
+		std::string foutBaseName; // output file base name
+		float * x = { 0 }; // x positions
+		float * y = { 0 }; // y positions
+		float * z = { 0 }; // z positions
+		int * ptz = { 0 }; // linked list pointer
+		int * heads = { 0 }; // head of each cell
+		const int ddx[5] = { 0, -1, 0, 1, 1 }; // vector comps to next box
+		const int ddy[5] = { 0, 1, 1, 1, 0 };
+		float	binWidth = 1.0f; // g(r) bin size
+		float	range = 20.0f; // maximum distance
+		int		startFileId = -1; // start file id
+		int		endFileId = -1; // end file id
+		int		numFrame = 1; // frame count
+		
+		std::vector<float> G; // correlation functions
+		long long int sum = 0;
+		int numBin = int(range / binWidth);
+		for (int i = 0; i <= numBin; i++)
+			G.push_back(0.0f); // init to zero
+		numBin = G.size();
 
 		//.. process and assign cmdline args
 		int process_arg_status = process_arg_3d(finBaseName,
@@ -451,25 +464,17 @@ namespace gofr {
 		if (process_arg_status != 0)
 			return process_arg_status;
 
-		//.. open output files
-		std::ofstream fxyz(foutBaseName + ".xyzc", std::ios::out);
-		std::ofstream fcsv(foutBaseName + ".csv", std::ios::out);
-		if (!fxyz.is_open() || !fcsv.is_open())
-			return 10;
-
 		//.. loop through all files (or just once when -1 & -1)
 		for (int fid = startFileId; fid <= endFileId; fid++)
 		{
 			//.. construct name
 			std::ostringstream ifname;
-			ifname << finBaseName;
+			ifname << finBaseName; 
 			if (startFileId >= 0) ifname << fid; // add number if needed
 			ifname << ".xyz";
-
-			//.. gather properties
-			util::simReplay::properties fileProps;
-			fileProps.getFrom(ifname.str());
-			fileProps.print();
+			util::simReplay::properties fileProps; // file proerties
+			fileProps.getFrom(ifname.str()); // gather properties
+			fileProps.print(); // show properties
 
 			//.. open file for reading
 			std::ifstream fin(ifname.str(), std::ios::in);
@@ -484,6 +489,11 @@ namespace gofr {
 			const int numParticles = fileProps.particles();
 			const float hx = fileProps.hx();
 			const float hy = fileProps.hy();
+			const float hxo2 = hx / 2.0f;
+			const float hyo2 = hy / 2.0f;
+			const int nxcell = int(ceil(hx / range));
+			const int nycell = int(ceil(hy / range));
+			const int ncell = nxcell*nycell;
 
 			//.. each frame loop
 			while (!fin.eof())
@@ -492,19 +502,97 @@ namespace gofr {
 				x = new float[numParticles];
 				y = new float[numParticles];
 				z = new float[numParticles];
+				ptz = new int[numParticles];
+				heads = new int[ncell];
+				for (int i = 0; i < ncell; i++) 
+					heads[i] = -1; //.. init heads
+
 				util::simReplay::readParticles(fin, fileProps, x, y, z);
-				printf("\n%s: Frame %i read from %s", funcName.c_str(), numFrame, ifname.str().c_str());
+				printf("\n%s: Frame %i read from %s", funcName.c_str(), numFrame++, ifname.str().c_str());
+
+				//.. construct linked list
+				for (int i = 0; i < numParticles; i++){
+					int icell = int(x[i] / range);
+					int jcell = int(y[i] / range);
+					int scell = jcell*nxcell + icell;
+					ptz[i] = heads[scell];
+					heads[scell] = i;
+				}
+
+				//.. puts counts in g(r) using linked list
+				printf("\nCalculating ... ");
+				float dx, dy, dz, r, rr;
+				const float range2 = range*range;
+				for (int ic = 0; ic < nxcell; ic++){
+					for (int jc = 0; jc < nycell; jc++){
+						int scell = jc*nxcell + ic; // scalar add of cell
+						if (heads[scell] == -1) continue;// look for stop flag
+						for (int dir = 0; dir < 5; dir++) { // loop over adjacent cells
+							int icnab = (ic + ddx[dir]) % nxcell; // neighbor cell scalor address
+							int jcnab = (jc + ddy[dir]) % nycell;
+							if (icnab < 0) icnab += nxcell;
+							if (jcnab < 0) jcnab += nycell;
+							int scnab = jcnab * nxcell + icnab;
+							if (heads[scnab] == -1) continue; //.. loop for stop flag
+							int ii = heads[scell];
+							while (ii >= 0){
+								int jj = heads[scnab];
+								while (jj >= 0){
+									dx = x[ii] - x[jj]; // displacements
+									dy = y[ii] - y[jj];
+									dz = z[ii] - z[jj];
+									if (dx > hxo2) dx -= hx; // x pbc
+									if (dx < -hxo2) dx += hx;
+									if (dy > hyo2) dy -= hy; // y pbc
+									if (dy < -hyo2) dy += hy;
+									rr = dx*dx + dy*dy + dz*dz; // dist^2
+									if (rr <= range2){ // add to g(r)
+										r = sqrt(rr); // find bin
+										int b = int(r / binWidth);
+										if ((b < 0) || (b > numBin)) continue; 
+										G.at(b) += 1.0f; sum++;
+									}
+									jj = ptz[jj];
+								}
+								ii = ptz[ii];
+							}
+						}
+					}
+				}
+
+				// open output and over-write
+				std::ofstream fcsv(foutBaseName + ".csv", std::ios::out | std::ios::trunc);
+				if (!fcsv.is_open()) // check for file being open
+					return 10;
+
+				//.. write current average to file
+				float r1, r2, area;
+				const int length = G.size();
+				for (int i = 0; i < length; i++){
+					r1 = float(i)*binWidth;
+					r2 = float(i + 1)*binWidth;
+					area = _PI*(r2*r2 - r1*r1);
+					G[i] /= (float)sum;
+					G[i] *= 2.0f;
+					G[i] /= area;
+					fcsv << G[i]; // print value to file
+					if (i != length - 1) // dont print comma in last col
+						fcsv << ", ";
+				}
+				fcsv.close(); // close file for until next frame
 
 				delete[] x;
 				delete[] y;
 				delete[] z;
+				delete[] ptz;
+				delete[] heads;
 				printf("\n%s: Frame memory deleted.", funcName.c_str());
 			}
 			fin.close();
 			printf("\n%s: Input file closed.", funcName.c_str());
 		}
-		fxyz.close();
-		fcsv.close();
+
+		
 		printf("\n%s: Output files closed.", funcName.c_str());
 		return EXIT_SUCCESS;
 	}

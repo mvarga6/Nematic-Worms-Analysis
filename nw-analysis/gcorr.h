@@ -1,8 +1,9 @@
 #pragma once
-
 // Nematic Worm Analysis
 // 11.11.14
-
+// Theta correlation function
+// Mike Varga
+// ----------------------------
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -12,7 +13,6 @@
 #include <stdlib.h>
 #include <vector>
 #include <math.h>
-
 // --------------------------------------------------------------------------------
 // This encapsolates a spacial correlation function calculation and things needed
 // for easy use.
