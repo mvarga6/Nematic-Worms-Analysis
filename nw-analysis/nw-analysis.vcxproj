@@ -137,6 +137,7 @@
     <ClInclude Include="analysis_funcs.h" />
     <ClInclude Include="delegator.h" />
     <ClInclude Include="analtask.h" />
+    <ClInclude Include="density.h" />
     <ClInclude Include="follow.h" />
     <ClInclude Include="gcorr.h" />
     <ClInclude Include="gofr.h" />
@@ -151,6 +152,7 @@
     <ClInclude Include="svden.h" />
     <ClInclude Include="svt.h" />
     <ClInclude Include="sxyzc.h" />
+    <ClInclude Include="thickness.h" />
     <ClInclude Include="varden.h" />
   </ItemGroup>
   <ItemGroup>

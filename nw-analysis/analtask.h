@@ -7,6 +7,8 @@
 //	around and use.
 enum AnalysisTask
 {
+	THICKNESS_3D,
+	DENSITY_3D,
 	FOLLOW,
 	GCORR,
 	GOFR,

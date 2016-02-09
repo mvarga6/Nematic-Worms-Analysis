@@ -43,10 +43,17 @@ delegator::delegator(int argc, char *argv[]){
 		std::string subarg;
 		int subargc = 0;
 
-		if (arg == "--follow"){
+		// v v v v v v 3D v v v v v v
+		if (arg == "--thickness"){
 			subarg = grabsubargs(subargc, argv, i);
-			this->toDo.push_back(new Task(AnalysisTask::FOLLOW, subargc, subarg));
+			this->toDo.push_back(new Task(AnalysisTask::THICKNESS_3D, subargc, subarg));
 		}
+		else if (arg == "--density"){
+			subarg = grabsubargs(subargc, argv, i);
+			this->toDo.push_back(new Task(AnalysisTask::DENSITY_3D, subargc, subarg));
+		}
+
+		// v v v v v v 2D v v v v v v
 		else if (arg == "--gcorr"){
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::GCORR, subargc, subarg));
@@ -132,7 +139,7 @@ void delegator::assignThreadedFunctions(){
 	for (auto it : this->toDo){
 		if (it->tsk != AnalysisTask::UNKNOWN)
 			it->thd = boost::thread(Implement.at(it->tsk), 
-							parseIntoSubStrings(it->arg));
+			parseIntoSubStrings(it->arg));
 
 		/*switch (it->tsk){
 		case AnalysisTask::FOLLOW :
