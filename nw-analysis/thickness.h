@@ -11,8 +11,9 @@
 #include <stdio.h>
 #include <vector>
 #include <math.h>
+#include "utilities.h"
 // -------------------------------
-namespace thickness_3d {
+namespace thickness {
 	const std::string funcName = "layer-thickness";
 	
 	// --------------------------------------------
@@ -205,7 +206,7 @@ namespace thickness_3d {
 
 	// -------------------------------------------------
 	// Run calculation
-	int calculate(std::vector<std::string> argv){
+	int calculate_3d(std::vector<std::string> argv){
 
 		std::string finBaseName;
 		std::string foutBaseName;
@@ -240,11 +241,18 @@ namespace thickness_3d {
 		//.. loop through all files (or just once when -1 & -1)
 		for (int fid = startFileId; fid <= endFileId; fid++)
 		{
-			//.. make sure it's open first
+			//.. construct file name
 			std::ostringstream ifname;
 			ifname << finBaseName;
 			if (startFileId >= 0) ifname << fid;
 			ifname << ".xyz";
+
+			//.. gather properties
+			util::simReplay::properties fileProps;
+			fileProps.getFrom(ifname.str());
+			fileProps.print();
+
+			//.. open file
 			std::ifstream fin(ifname.str(), std::ios::in);
 			if (!fin.is_open()){
 				std::cerr << std::endl << funcName << ": Error opening file\n"
@@ -254,50 +262,45 @@ namespace thickness_3d {
 			}
 
 			//.. stuff
-			int		numParticles;
-			int		numPerWorm;
-			char	charTrash;
-			float	k2spring;
-			float	hx;
-			float	hy;
-			float	floatTrash;
+			const int numParticles = fileProps.particles();
+			const float hx = fileProps.hx();
+			const float hy = fileProps.hy();
 
 			//.. each frame loop
 			while (!fin.eof())
 			{
-				//.. read frame header
-				std::string line;
-				if (!std::getline(fin, line)) break;
-				numParticles = (int)std::strtod(line.c_str(), NULL);
-				printf("\n%s: Parts: %i", funcName.c_str(), numParticles);
-				if (!std::getline(fin, line)) break;
-				printf("\n\n%s: Comment line: %s", funcName.c_str(), line.c_str());
-				numParticles -= 4;
+				////.. read frame header
+				//std::string line;
+				//if (!std::getline(fin, line)) break;
+				//numParticles = (int)std::strtod(line.c_str(), NULL);
+				//printf("\n%s: Parts: %i", funcName.c_str(), numParticles);
+				//if (!std::getline(fin, line)) break;
+				//printf("\n\n%s: Comment line: %s", funcName.c_str(), line.c_str());
+				//numParticles -= 4;
 				
 				// allocate memory
 				x = new float[numParticles];
 				y = new float[numParticles];
 				z = new float[numParticles];
-
-				// Read in X,Y,Z positions for frame
-				printf("\n%s: Reading frame %i from %s", funcName.c_str(), numFrame, ifname.str().c_str());
-				for (int i = 0; i < numParticles; i++){
-					std::getline(fin, line);
-					std::stringstream row(line);
-					row >> charTrash >> x[i] >> y[i] >> z[i];
-				}
-
-				// Dump 3 corner particles at end of file to trash
-				for (int t = 0; t < 3; t++){
-					std::getline(fin, line);
-					std::stringstream row(line);
-					row >> charTrash >> floatTrash >> floatTrash >> floatTrash;
-				}
-
-				// Get box size from fourth
-				std::getline(fin, line);
-				std::stringstream row(line);
-				row >> charTrash >> hx >> hy >> floatTrash;
+				util::simReplay::readParticles(fin, fileProps, x, y, z);
+				printf("\n%s: Frame %i read from %s", funcName.c_str(), numFrame, ifname.str().c_str());
+				//// Read in X,Y,Z positions for frame
+				//printf("\n%s: Reading frame %i from %s", funcName.c_str(), numFrame, ifname.str().c_str());
+				//for (int i = 0; i < numParticles; i++){
+				//	std::getline(fin, line);
+				//	std::stringstream row(line);
+				//	row >> charTrash >> x[i] >> y[i] >> z[i];
+				//}
+				//// Dump 3 corner particles at end of file to trash
+				//for (int t = 0; t < 3; t++){
+				//	std::getline(fin, line);
+				//	std::stringstream row(line);
+				//	row >> charTrash >> floatTrash >> floatTrash >> floatTrash;
+				//}
+				//// Get box size from fourth
+				//std::getline(fin, line);
+				//std::stringstream row(line);
+				//row >> charTrash >> hx >> hy >> floatTrash;
 
 				// Make mean square displayment in desired dim
 				const int xdim = (int)ceil(hx / boxWidth);
@@ -335,6 +338,9 @@ namespace thickness_3d {
 				for (int i = 0; i < xdim; i++)
 					delete[] rmsqr_[i];
 				delete[] rmsqr_;
+				delete[] x;
+				delete[] y;
+				delete[] z;
 				printf("\n%s: Frame memory deleted.", funcName.c_str());
 			}
 			fin.close();

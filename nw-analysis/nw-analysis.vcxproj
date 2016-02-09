@@ -153,6 +153,7 @@
     <ClInclude Include="svt.h" />
     <ClInclude Include="sxyzc.h" />
     <ClInclude Include="thickness.h" />
+    <ClInclude Include="utilities.h" />
     <ClInclude Include="varden.h" />
   </ItemGroup>
   <ItemGroup>

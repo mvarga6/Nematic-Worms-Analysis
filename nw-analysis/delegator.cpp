@@ -44,11 +44,11 @@ delegator::delegator(int argc, char *argv[]){
 		int subargc = 0;
 
 		// v v v v v v 3D v v v v v v
-		if (arg == "--thickness"){
+		if (arg == "--thickness-3d"){
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::THICKNESS_3D, subargc, subarg));
 		}
-		else if (arg == "--density"){
+		else if (arg == "--density-3d"){
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::DENSITY_3D, subargc, subarg));
 		}

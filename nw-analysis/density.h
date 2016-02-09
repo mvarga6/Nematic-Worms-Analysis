@@ -12,7 +12,7 @@
 #include <vector>
 #include <math.h>
 // -------------------------------
-namespace density_3d {
+namespace density {
 	const std::string funcName = "layer-density";
 
 	// --------------------------------------------
@@ -54,8 +54,7 @@ namespace density_3d {
 			{
 				show_usage(funcName);
 				return 1;
-			}
-			// ------------------------------------------
+			} // ------------------------------------------
 			else if ((arg == "-i") || (arg == "--input"))
 			{
 				if (i + 1 < argc){
@@ -67,8 +66,7 @@ namespace density_3d {
 					std::cerr << "--input option requires one argument." << std::endl;
 					return 2;
 				}
-			}
-			// ------------------------------------------
+			} // ------------------------------------------
 			else if ((arg == "-o") || (arg == "--output"))
 			{
 				if (i + 1 < argc){
@@ -80,8 +78,7 @@ namespace density_3d {
 					std::cerr << "--output option requires one argument." << std::endl;
 					return 3;
 				}
-			}
-			// ------------------------------------------
+			} // ------------------------------------------
 			else if ((arg == "-w") || (arg == "--boxwidth"))
 			{
 				if (i + 1 < argc){
@@ -94,8 +91,7 @@ namespace density_3d {
 					std::cerr << "--output option requires one argument." << std::endl;
 					return 4;
 				}
-			}
-			// ------------------------------------------
+			} // ------------------------------------------
 			else if ((arg == "-l") || (arg == "--layerpos"))
 			{
 				if (i + 1 < argc){
@@ -108,8 +104,7 @@ namespace density_3d {
 					std::cerr << "--output option requires one argument." << std::endl;
 					return 4;
 				}
-			}
-			// ------------------------------------------
+			} // ------------------------------------------
 			else if ((arg == "-d") || (arg == "--dimension"))
 			{
 				if (i + 1 < argc){
@@ -122,8 +117,7 @@ namespace density_3d {
 					std::cerr << "--output option requires one argument." << std::endl;
 					return 5;
 				}
-			}
-			// ------------------------------------------
+			} // ------------------------------------------
 			else if ((arg == "-s") || (arg == "--start")){
 				if (i + 1 < argc){
 					sfid = int(strtod(argv[i + 1].c_str(), NULL));
@@ -144,8 +138,7 @@ namespace density_3d {
 					std::cerr << "--input option requires one argument." << std::endl;
 					return 7;
 				}
-			}
-			// ------------------------------------------
+			} // ------------------------------------------
 			else
 			{
 				outbasename = funcName;
@@ -178,7 +171,7 @@ namespace density_3d {
 
 	// -------------------------------------------------
 	// Run calculation
-	int calculate(std::vector<std::string> argv){
+	int calculate_3d(std::vector<std::string> argv){
 
 		std::string finBaseName;
 		std::string foutBaseName;
@@ -308,6 +301,9 @@ namespace density_3d {
 				for (int i = 0; i < xdim; i++)
 					delete[] rmsqr_[i];
 				delete[] rmsqr_;
+				delete[] x;
+				delete[] y;
+				delete[] z;
 				printf("\n%s: Frame memory deleted.", funcName.c_str());
 			}
 			fin.close();

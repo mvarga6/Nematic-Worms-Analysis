@@ -44,7 +44,7 @@ typedef int(*Calculation)(std::vector<std::string>);
 static const std::map< AnalysisTask, Calculation > Implement = map_list_of
 	( AnalysisTask::FOLLOW,		&follow::calculate )
 	( AnalysisTask::GCORR,		&gcorr::calculate )
-	( AnalysisTask::GOFR,		&gofr::calculate )
+	( AnalysisTask::GOFR,		&gofr::calculate_2d )
 	( AnalysisTask::GTCORR,		&gtcorr::calculate )
 	( AnalysisTask::HIGHLIGHT,	&highlight::calculate )
 	( AnalysisTask::HISTO,		&histo::calculate )
@@ -57,5 +57,5 @@ static const std::map< AnalysisTask, Calculation > Implement = map_list_of
 	( AnalysisTask::SVT,		&svt::calculate )
 	( AnalysisTask::SXYZC,		&sxyzc::calculate )
 	( AnalysisTask::VARDEN,		&varden::calculate )
-	( AnalysisTask::THICKNESS_3D, &thickness_3d::calculate )
-	( AnalysisTask::DENSITY_3D, &density_3d::calculate );
+	( AnalysisTask::THICKNESS_3D, &thickness::calculate_3d )
+	( AnalysisTask::DENSITY_3D, &density::calculate_3d );
