@@ -56,6 +56,10 @@ delegator::delegator(int argc, char *argv[]){
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::GOFR_3D, subargc, subarg));
 		}
+		else if (arg == "--sxyzc-3d"){
+			subarg = grabsubargs(subargc, argv, i);
+			this->toDo.push_back(new Task(AnalysisTask::SXYZC_3D, subargc, subarg));
+		}
 
 		// v v v v v v 2D v v v v v v
 		else if (arg == "--gcorr"){

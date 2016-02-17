@@ -29,9 +29,6 @@
     <ClInclude Include="delegator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="analtask.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="follow.h">
       <Filter>Source Files\analysis</Filter>
     </ClInclude>
@@ -87,6 +84,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="analtask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="liquid_crystals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,26 +3,23 @@
 // ------------------------------------------------
 // include all required files storing 
 // the calculation functions.
-// 2D
-#include "follow.h"
-#include "gcorr.h"
-#include "gofr.h"
-#include "gtcorr.h"
-#include "highlight.h"
-#include "histo.h"
-#include "momentum.h"
-#include "persistence.h"
-#include "pofr.h"
-#include "pvt.h"
-#include "shift2com.h"
-#include "svden.h"
-#include "svt.h"
-#include "sxyzc.h"
-#include "varden.h"
-
-// 3D
-#include "thickness.h"
-#include "density.h"
+#include "follow.h"			// 2D
+#include "gcorr.h"			// 2D
+#include "gofr.h"			// 2D & 3D
+#include "gtcorr.h"			// 2D
+#include "highlight.h"		// 2D
+#include "histo.h"			// 2D
+#include "momentum.h"		// 2D
+#include "persistence.h"	// 2D
+#include "pofr.h"			// 2D
+#include "pvt.h"			// 2D
+#include "shift2com.h"		// 2D
+#include "svden.h"			// 2D
+#include "svt.h"			// 2D
+#include "sxyzc.h"			// 2D & 3D
+#include "varden.h"			// 2D
+#include "thickness.h"		// 3D
+#include "density.h"		// 3D
 
 // -------------------------------------------------
 // map the AnalysisTasks to functions
@@ -59,4 +56,5 @@ static const std::map< AnalysisTask, Calculation > Implement = map_list_of
 	( AnalysisTask::VARDEN,		&varden::calculate )
 	( AnalysisTask::THICKNESS_3D, &thickness::calculate_3d )
 	( AnalysisTask::DENSITY_3D, &density::calculate_3d )
-	( AnalysisTask::GOFR_3D,	&gofr::calculate_3d );
+	( AnalysisTask::GOFR_3D,	&gofr::calculate_3d )
+	( AnalysisTask::SXYZC_3D,	&sxyzc::calculate_3d);

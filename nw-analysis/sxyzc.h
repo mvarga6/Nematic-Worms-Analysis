@@ -1,6 +1,10 @@
 // Nematic Worm Analysis
-// 11.11.14
-
+// 2.17.16
+// Produce xyzc of order parameter
+// Mike Varga
+#ifndef __SXYZC_H__
+#define __SXYZC_H__
+// ---------------------------
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -8,46 +12,12 @@
 #include <stdio.h>
 #include <math.h>
 #include <vector>
-
+#include "utilities.h"
+#include "liquid_crystals.h"
+// --------------------------
 namespace sxyzc {
 
 	const std::string funcName = "sxyzc";
-
-	class n {
-	public:
-
-		inline n(void){
-			nx = 0;
-			ny = 0;
-			mag = 0;
-		}
-		inline n(float x, float y){
-			nx = x;
-			ny = y;
-			mag = std::sqrt(nx*nx + ny*ny);
-			cosT = std::cos(atan(ny / nx));
-		}
-
-		inline void set(float x, float y){
-			nx = x;
-			ny = y;
-			mag = std::sqrt(nx*nx + ny*ny);
-			cosT = std::cos(atan(ny / nx));
-		}
-
-		inline float& getnx(void){ return nx; }
-		inline float& getny(void){ return ny; }
-
-		inline float operator*(const n& rhs){
-			return (this->nx*rhs.nx + this->ny*rhs.ny);
-		}
-
-	private:
-		float nx;
-		float ny;
-		float mag;
-		float cosT;
-	};
 
 	static void show_usage(std::string name)
 	{
@@ -245,4 +215,238 @@ namespace sxyzc {
 		}
 		return EXIT_SUCCESS;
 	}
+//*************************************************************************
+
+	// --------------------------------------------
+	// Prints to user the program usage.
+	static void show_usage_3d(std::string name)
+	{
+		std::cerr << "\a";
+		std::cerr << "Usage: " << name << " <option(s)> file...\n"
+			<< "\t-i,--input\t\tAdd input file (w/o ext)\n"
+			<< "\t-o,--output\t\tOutput file name (w/o ext)\n"
+			<< "Options:\n"
+			<< "\t-h,--help\t\tShow this help message\n"
+			<< "\t-w,--boxwidth\t\tSet width of integration cells\n"
+			<< "\t-s,--start\t\tDefine id of first input file (default=1)\n"
+			<< "\t-e,--end\t\tDefine id of last input file (default=1)\n"
+			<< "If no in/out options specified, default output file name is 'unnamed.txt'\n"
+			<< "and input file must follow program instance\n"
+			<< std::endl;
+	}
+
+	// ------------------------------------------------
+	// Process cmdline args and assign as needed.
+	static int process_arg_3d(std::string		&basename,
+		std::string		&outbasename,
+		std::vector<std::string> argv,
+		float			&boxwidth,
+		int				&sfid,
+		int				&efid)
+	{
+		const int argc = argv.size();
+		for (int i = 0; i < argc; ++i)
+		{
+			std::string arg = argv[i];
+			if ((arg == "-h") || (arg == "--help"))
+			{
+				show_usage(funcName);
+				return 1;
+			}
+			// ------------------------------------------
+			else if ((arg == "-i") || (arg == "--input"))
+			{
+				if (i + 1 < argc){
+					basename = argv[i + 1];
+					i++;
+				}
+				else
+				{
+					std::cerr << "--input option requires one argument." << std::endl;
+					return 2;
+				}
+			}
+			// ------------------------------------------
+			else if ((arg == "-o") || (arg == "--output"))
+			{
+				if (i + 1 < argc){
+					outbasename = argv[i + 1];
+					i++;
+				}
+				else
+				{
+					std::cerr << "--output option requires one argument." << std::endl;
+					return 3;
+				}
+			}
+			// ------------------------------------------
+			else if ((arg == "-w") || (arg == "--boxwidth"))
+			{
+				if (i + 1 < argc){
+					float assign = strtof(argv[i + 1].c_str(), NULL);
+					boxwidth = assign;
+					i++;
+				}
+				else
+				{
+					std::cerr << "--output option requires one argument." << std::endl;
+					return 4;
+				}
+			}
+			// ------------------------------------------
+			else if ((arg == "-s") || (arg == "--start")){
+				if (i + 1 < argc){
+					sfid = int(strtod(argv[i + 1].c_str(), NULL));
+					i++;
+				}
+				else {
+					std::cerr << "--input option requires one argument." << std::endl;
+					return 6;
+				}
+			}
+			// ------------------------------------------
+			else if ((arg == "-e") || (arg == "--end")){
+				if (i + 1 < argc){
+					efid = int(strtod(argv[i + 1].c_str(), NULL));
+					i++;
+				}
+				else {
+					std::cerr << "--input option requires one argument." << std::endl;
+					return 7;
+				}
+			}
+			// ------------------------------------------
+			else
+			{
+				outbasename = funcName;
+				return 0;
+			}
+		}
+		return 0;
+	}
+
+	// -------------------------------------------------
+	// Run calculation in 3d
+	int calculate_3d(std::vector<std::string> argv){
+
+		std::string finBaseName;
+		std::string foutBaseName;
+		float * x = { 0 };
+		float * y = { 0 };
+		float * z = { 0 };
+		float	boxWidth = 2.0f;
+		int		startFileId = -1;
+		int		endFileId = -1;
+		int		numFrame = 0;
+
+		//.. process and assign cmdline args
+		int process_arg_status = process_arg_3d(finBaseName,
+			foutBaseName,
+			argv,
+			boxWidth,
+			startFileId,
+			endFileId);
+		if (process_arg_status != 0)
+			return process_arg_status;
+
+		//.. open output files
+		std::ofstream fxyz(foutBaseName + ".xyzc", std::ios::out);
+		if (!fxyz.is_open()) return 10;
+
+		//.. loop through all files (or just once when -1 & -1)
+		for (int fid = startFileId; fid <= endFileId; fid++)
+		{
+			//.. construct file name
+			std::ostringstream ifname;
+			ifname << finBaseName;
+			if (startFileId >= 0) ifname << fid;
+			ifname << ".xyz";
+
+			//.. gather properties and assure xyz format
+			util::simReplay::properties fileProps;
+			fileProps.getFrom(ifname.str());
+			fileProps.print();
+			if (fileProps.type != util::simReplay::type::xyz)
+				return 20;
+
+			//.. open file
+			std::ifstream fin(ifname.str(), std::ios::in);
+			if (!fin.is_open()){
+				std::cerr << std::endl << funcName << ": Error opening file\n"
+					<< funcName << ": Check for correct input name and directory";
+				show_usage_3d(funcName);
+				return 30;
+			}
+
+			//.. stuff
+			const int numParticles = fileProps.particles();
+			const int numPerWorm = fileProps.aggsize();
+			const int numWorms = numParticles / numPerWorm;
+			const float hx = fileProps.hx();
+			const float hy = fileProps.hy();
+
+			//.. each frame loop
+			while (!fin.eof())
+			{
+				// allocate memory
+				x = new float[numParticles];
+				y = new float[numParticles];
+				z = new float[numParticles];
+				util::simReplay::readParticles(fin, fileProps, x, y, z);
+				printf("\n%s: Frame %i read from %s", funcName.c_str(), numFrame, ifname.str().c_str());
+
+				// container for all particle directors
+				const int xdim = (int)ceil(hx / boxWidth);
+				const int ydim = (int)ceil(hy / boxWidth);
+				std::vector<ngroup> all_n;
+				all_n.resize(xdim*ydim);
+
+				// put directors into boxes
+				float dx, dy, dz, px, py, pz;
+				int i, j, b, id;
+				for (int w = 0; w < numWorms; w++){
+					for (int p = 0; p < numPerWorm - 1; p++){
+						id = w*numPerWorm + p;
+						dx = x[id + 1] - x[id];
+						dy = y[id + 1] - y[id];
+						dz = z[id + 1] - z[id];
+						px = x[id] + dx / 2; // midpoint of vector
+						py = y[id] + dy / 2;
+						pz = z[id] + dz / 2;
+						util::nw::pbc(dx, hx); // pbc for distances
+						util::nw::pbc(dy, hy);
+						util::nw::pbc_pos(px, hx); // pbc for location
+						util::nw::pbc_pos(py, hy);
+						i = int(px / boxWidth); // box i coord
+						j = int(py / boxWidth); // box j coord
+						b = j*xdim + i; // box address
+						n dir(dx, dy, dz);
+						all_n.at(b).push_back(dir); // add dir to box
+					}
+				}			
+
+				// Calculate S and print to files
+				fxyz << xdim * ydim << std::endl;
+				fxyz << "Frame " << numFrame++ << std::endl;
+				for (int j = 0; j < ydim; j++){
+					for (int i = 0; i < xdim; i++){
+						int id = j*xdim + i;
+						fxyz << "A " << i << " " << j << " 0 " << calculate_S(all_n[id]) << std::endl;
+					}
+				}
+
+				delete[] x;
+				delete[] y;
+				delete[] z;
+				printf("\n%s: Frame memory deleted.", funcName.c_str());
+			}
+			fin.close();
+			printf("\n%s: Input file closed.", funcName.c_str());
+		}
+		fxyz.close();
+		printf("\n%s: Output files closed.", funcName.c_str());
+		return EXIT_SUCCESS;
+	}
 }
+
+#endif

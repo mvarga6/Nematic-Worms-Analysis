@@ -10,6 +10,7 @@ enum AnalysisTask
 	THICKNESS_3D,
 	DENSITY_3D,
 	GOFR_3D,
+	SXYZC_3D,
 	FOLLOW,
 	GCORR,
 	GOFR,

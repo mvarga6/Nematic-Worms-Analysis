@@ -2,6 +2,8 @@
 // 2.4.16
 // Detect thickness of worm layer
 // Mike Varga
+#ifndef __THICKNESS_H__
+#define __THICKNESS_H__
 // -------------------------------
 #include <iostream>
 #include <fstream>
@@ -18,7 +20,7 @@ namespace thickness {
 	
 	// --------------------------------------------
 	// Prints to user the program usage.
-	static void show_usage(std::string name)
+	static void show_usage_3d(std::string name)
 	{
 		std::cerr << "\a";
 		std::cerr << "Usage: " << name << " <option(s)> file...\n"
@@ -38,7 +40,7 @@ namespace thickness {
 	
 	// ------------------------------------------------
 	// Process cmdline args and assign as needed.
-	static int process_arg(std::string		&basename,
+	static int process_arg_3d(std::string		&basename,
 		std::string		&outbasename,
 		std::vector<std::string> argv,
 		float			&boxwidth,
@@ -205,7 +207,7 @@ namespace thickness {
 	}
 
 	// -------------------------------------------------
-	// Run calculation
+	// Run calculation in 3d
 	int calculate_3d(std::vector<std::string> argv){
 
 		std::string finBaseName;
@@ -221,7 +223,7 @@ namespace thickness {
 		int		dim = 2; // Z by default
 
 		//.. process and assign cmdline args
-		int process_arg_status = process_arg(finBaseName, 
+		int process_arg_status = process_arg_3d(finBaseName, 
 			foutBaseName, 
 			argv, 
 			boxWidth, 
@@ -257,7 +259,7 @@ namespace thickness {
 			if (!fin.is_open()){
 				std::cerr << std::endl << funcName << ": Error opening file\n"
 					<< funcName << ": Check for correct input name and directory";
-				show_usage(funcName);
+				show_usage_3d(funcName);
 				return 20;
 			}
 
@@ -326,3 +328,5 @@ namespace thickness {
 		return EXIT_SUCCESS;
 	}
 }
+
+#endif

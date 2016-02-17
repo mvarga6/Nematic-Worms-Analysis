@@ -43,6 +43,7 @@ namespace util {
 		class properties {
 			bool set_; // state of properties setting
 			int atoms_; // number of atoms including corners
+			int aggsize_; // inferred aggregate size (from atom types)
 			int cornrs_; // number of corners (default 4)
 			str comment_; // comment line
 			type type_; // file type xyz, xyzc, xyzv
@@ -52,7 +53,7 @@ namespace util {
 		public:
 			properties(int atms = 0, str cmt = "", type typ = type::no_type)
 				: atoms_(atms), comment_(cmt), type_(typ), cornrs_(4), set_(false),
-				xmin_(0), xmax_(0), ymin_(0), ymax_(0), zmin_(0), zmax_(0){};
+				xmin_(0), xmax_(0), ymin_(0), ymax_(0), zmin_(0), zmax_(0), aggsize_(1){};
 			~properties(){};
 
 			//.. set properties from file
@@ -62,6 +63,8 @@ namespace util {
 			void set() { this->set_ = true; }
 			int& atoms(){ return this->atoms_; }
 			void atoms(int a) { this->atoms_ = a; };
+			int& aggsize(){ return this->aggsize_; }
+			void aggsize(int a) { this->aggsize_ = a; };
 			int particles() { return (this->atoms_ - this->cornrs_); }
 			int& corners() { return this->cornrs_; }
 			void corners(int c) { this->cornrs_ = c; }
@@ -91,6 +94,7 @@ namespace util {
 		void properties::print(){
 			printf("\nset:\t\t%I", this->set_);
 			printf("\natoms:\t\t%i", this->atoms_);
+			printf("\naggsize:\t%i", this->aggsize_);
 			printf("\ncorners:\t%i", this->cornrs_);
 			printf("\ncomment:\t%s", this->comment_.c_str());
 			printf("\ntype:\t\t%i", (int)this->type_);
@@ -110,20 +114,34 @@ namespace util {
 			new_props.atoms((int)std::strtod(line.c_str(), NULL));
 			if (!std::getline(fin, line)) return false; // comment line
 			new_props.comment(line);
-			if (!std::getline(fin, line)) return false; // number of cols in first line
-			int cols = 0; sstrm ss(line); str tmp;
-			while (ss >> str()) cols++; // count columns
+
+			if (!std::getline(fin, line)) return false; // get first line
+			int cols = 0; char ty_1st;
+			sstrm ss(line); str tmp; 
+			if (ss >> ty_1st) cols++; // grab first particle type
+			while (ss >> tmp) cols++; // count extra cols
+			char ty_; int aggregate = 0; 
+			do {
+				aggregate++; // add 1 to aggsize
+				ss.clear();
+				if (!getline(fin, line)) return false;
+				ss.str(line);
+				ss >> ty_;
+			} while (ty_ == ty_1st); // until new particle type read
+			new_props.aggsize(aggregate); // assign aggregate size
+
 			if (cols == 4) new_props.type(type::xyz);
 			else if (cols == 5) new_props.type(type::xyzc);
 			else if (cols == 7) new_props.type(type::xyzv);
 			else new_props.type(type::no_type);
 
-			for (int i = 0; i < (new_props.atoms() - new_props.corners() - 1); i++)
+			const int more_to_read = (new_props.atoms() - new_props.corners() - aggregate);
+			for (int i = 0; i < more_to_read; i++)
 				if (!std::getline(fin, line)) return false; // loop to end
 			for (int i = 0; i < new_props.corners(); i++){ // get box corners
 				if (!std::getline(fin, line)) return false;
 				sstrm css(line); char c; float x, y, z;
-				css >> c >> x >> y >> z;
+				css >> c >> x >> y >> z; // seek for box size
 				new_props.xmin() = std::min(new_props.xmin(), x);
 				new_props.xmax() = std::max(new_props.xmax(), x);
 				new_props.ymin() = std::min(new_props.ymin(), y);
@@ -208,6 +226,22 @@ namespace util {
 			sstrm row(line);
 			row >> c >> x >> y >> z >> vx >> vy >> vz;
 			return true;
+		}
+	}
+
+	//.. utilies for nematic worms only
+	namespace nw {
+
+		//.. calculate distances in periodic box
+		void pbc(float &dx, const float& Lx) {
+			if (dx > Lx / 2) dx -= Lx;
+			else if (dx < -Lx / 2) dx += Lx;
+		}
+
+		//.. return true position in period box
+		void pbc_pos(float &x, const float& Lx) {
+			if (x > Lx) x -= Lx;
+			else if (x < 0) x += Lx;
 		}
 	}
 }

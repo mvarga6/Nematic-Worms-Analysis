@@ -138,6 +138,7 @@
     <ClInclude Include="delegator.h" />
     <ClInclude Include="analtask.h" />
     <ClInclude Include="density.h" />
+    <ClInclude Include="liquid_crystals.h" />
     <ClInclude Include="follow.h" />
     <ClInclude Include="gcorr.h" />
     <ClInclude Include="gofr.h" />
