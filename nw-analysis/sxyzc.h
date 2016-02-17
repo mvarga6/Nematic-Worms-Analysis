@@ -334,7 +334,7 @@ namespace sxyzc {
 		float * x = { 0 };
 		float * y = { 0 };
 		float * z = { 0 };
-		float	boxWidth = 2.0f;
+		float	boxWidth = 4.0f;
 		int		startFileId = -1;
 		int		endFileId = -1;
 		int		numFrame = 0;
@@ -366,7 +366,7 @@ namespace sxyzc {
 			util::simReplay::properties fileProps;
 			fileProps.getFrom(ifname.str());
 			fileProps.print();
-			if (fileProps.type != util::simReplay::type::xyz)
+			if (fileProps.type() != util::simReplay::type::xyz)
 				return 20;
 
 			//.. open file
@@ -431,7 +431,8 @@ namespace sxyzc {
 				for (int j = 0; j < ydim; j++){
 					for (int i = 0; i < xdim; i++){
 						int id = j*xdim + i;
-						fxyz << "A " << i << " " << j << " 0 " << calculate_S(all_n[id]) << std::endl;
+						fxyz << "A " << i << " " << j << " 0 " 
+							<< calculate_S(all_n[id], true) << std::endl;
 					}
 				}
 

@@ -75,7 +75,8 @@ private:
 
 typedef std::vector<n> ngroup;
 typedef ngroup::iterator ngroup_iter;
-float calculate_S(ngroup& u) {
+float calculate_S(ngroup& u, bool true3D_S = false) {
+	if (u.empty()) return 0; // handle empty list
 	for (auto &it : u) it.normalize(); // normalize all
 	n dir(0.0f, 0.0f, 0.0f);
 	for (auto &it : u) { // formulate director
@@ -84,15 +85,21 @@ float calculate_S(ngroup& u) {
 		dir.nz() += it.nz();
 	}
 	dir.normalize(); // make unit vector
-	
-	//ngroup_director.set(dir.nx(), dir.ny(), dir.nz()); // set director
-	float cos2ave = 0.0f;
+	if (dir.mag() == 0) return 0;
+	float cos2ave = 0.0f, cossinave = 0.0f; // accumulated for averaging
+	float costh, sinth, cos2th; // middlemen variables
 	for (auto &it : u) { // calculate <cos^2(th)>
-		const float costh = dir.cos_angle_between(it);
-		cos2ave += costh*costh;
+		costh = dir.cos_angle_between(it);
+		cos2th = costh*costh;
+		sinth = sqrt(1 - cos2th);
+		cos2ave += cos2th;
+		cossinave += costh*sinth;
 	}
-	cos2ave /= float(u.size()); // make numeric average
-	return (0.5f * (3 * cos2ave - 1)); // return S
+	cos2ave /= float(u.size()); // make numeric averages
+	cossinave /= float(u.size());
+	if (true3D_S)
+		return (0.5f * (3 * cos2ave - 1)); // return true 3D order
+	return (2.0f * (sqrt((cos2ave - 0.5f)*(cos2ave - 0.5f) + cossinave*cossinave)));
 }
 
 #endif

@@ -55,7 +55,7 @@ namespace thickness {
 			std::string arg = argv[i];
 			if ((arg == "-h") || (arg == "--help"))
 			{
-				show_usage(funcName);
+				show_usage_3d(funcName);
 				return 1;
 			}
 			// ------------------------------------------
@@ -149,8 +149,7 @@ namespace thickness {
 				}
 			}
 			// ------------------------------------------
-			else
-			{
+			else {
 				outbasename = funcName;
 				return 0;
 			}

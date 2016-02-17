@@ -135,7 +135,7 @@ namespace util {
 			else if (cols == 7) new_props.type(type::xyzv);
 			else new_props.type(type::no_type);
 
-			const int more_to_read = (new_props.atoms() - new_props.corners() - aggregate);
+			const int more_to_read = (new_props.atoms() - new_props.corners() - aggregate - 1);
 			for (int i = 0; i < more_to_read; i++)
 				if (!std::getline(fin, line)) return false; // loop to end
 			for (int i = 0; i < new_props.corners(); i++){ // get box corners
