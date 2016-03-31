@@ -65,7 +65,6 @@ public:
 		return ang;
 	}
 	
-
 private:
 	float nx_;
 	float ny_;
@@ -85,7 +84,7 @@ float calculate_S(ngroup& u, bool true3D_S = false) {
 		dir.nz() += it.nz();
 	}
 	dir.normalize(); // make unit vector
-	if (dir.mag() == 0) return 0;
+	if (dir.mag() <= 0.0f) return 0;
 	float cos2ave = 0.0f, cossinave = 0.0f; // accumulated for averaging
 	float costh, sinth, cos2th; // middlemen variables
 	for (auto &it : u) { // calculate <cos^2(th)>

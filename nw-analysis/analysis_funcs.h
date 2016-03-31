@@ -20,6 +20,8 @@
 #include "varden.h"			// 2D
 #include "thickness.h"		// 3D
 #include "density.h"		// 3D
+#include "msd.h"			// 3D
+#include "velocity_map.h"	// 2D & quasi-3D
 
 // -------------------------------------------------
 // map the AnalysisTasks to functions
@@ -57,4 +59,6 @@ static const std::map< AnalysisTask, Calculation > Implement = map_list_of
 	( AnalysisTask::THICKNESS_3D, &thickness::calculate_3d )
 	( AnalysisTask::DENSITY_3D, &density::calculate_3d )
 	( AnalysisTask::GOFR_3D,	&gofr::calculate_3d )
-	( AnalysisTask::SXYZC_3D,	&sxyzc::calculate_3d);
+	( AnalysisTask::SXYZC_3D,	&sxyzc::calculate_3d )
+	( AnalysisTask::MSD_3D,		&msd::calculate_3d)
+	( AnalysisTask::VGRID,		&velocity::calculate_3d);

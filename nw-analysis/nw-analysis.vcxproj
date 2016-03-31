@@ -126,7 +126,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>cp "$(OutDir)$(TargetName)$(TargetExt)" "C:\Users\Mike\Google Drive\Nematic Worms Project\bin\"</Command>
+      <Command>COPY "$(OutDir)$(TargetName)$(TargetExt)" "C:\Users\Mike\Google Drive\Nematic Worms Project\bin\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -146,6 +146,7 @@
     <ClInclude Include="highlight.h" />
     <ClInclude Include="histo.h" />
     <ClInclude Include="momentum.h" />
+    <ClInclude Include="msd.h" />
     <ClInclude Include="persistence.h" />
     <ClInclude Include="pofr.h" />
     <ClInclude Include="pvt.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="thickness.h" />
     <ClInclude Include="utilities.h" />
     <ClInclude Include="varden.h" />
+    <ClInclude Include="velocity_map.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -11,6 +11,8 @@ enum AnalysisTask
 	DENSITY_3D,
 	GOFR_3D,
 	SXYZC_3D,
+	MSD_3D,
+	VGRID,
 	FOLLOW,
 	GCORR,
 	GOFR,

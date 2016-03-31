@@ -334,7 +334,7 @@ namespace gofr {
 			<< "Options:\n"
 			<< "\t-h,--help\t\tShow this help message\n"
 			<< "\t-m,--max\t\tMaximum correlation distance (default=10.0)\n"
-			<< "\t-bw,--width\t\tMaximum correlation distance (default=10.0)\n"
+			<< "\t-bw,--width\t\tG(r) resolution (default=1.0)\n"
 			<< "\t-s,--start\t\tDefine id of first input file (default=1)\n"
 			<< "\t-e,--end\t\tDefine id of last input file (default=1)\n"
 			<< "If no in/out options specified, default output file name is 'Q-tensor.txt'\n"
@@ -432,7 +432,7 @@ namespace gofr {
 	int calculate_3d(std::vector<std::string> argv){
 
 		std::string finBaseName; //input file base name
-		std::string foutBaseName; // output file base name
+		std::string foutBaseName(funcName); // output file base name
 		float * x = { 0 }; // x positions
 		float * y = { 0 }; // y positions
 		float * z = { 0 }; // z positions
@@ -463,6 +463,11 @@ namespace gofr {
 			endFileId);
 		if (process_arg_status != 0)
 			return process_arg_status;
+
+		// open output and over-write
+		std::ofstream fcsv(foutBaseName + ".csv", std::ios::out);
+		if (!fcsv.is_open()) // check for file being open
+			return 10;
 
 		//.. loop through all files (or just once when -1 & -1)
 		for (int fid = startFileId; fid <= endFileId; fid++)
@@ -495,19 +500,23 @@ namespace gofr {
 			const int nycell = int(ceil(hy / range));
 			const int ncell = nxcell*nycell;
 
+			// allocate memory
+			x = new float[numParticles];
+			y = new float[numParticles];
+			z = new float[numParticles];
+			ptz = new int[numParticles];
+			heads = new int[ncell];
+			printf("\nMemory allocated.");
+
 			//.. each frame loop
-			while (!fin.eof())
+			//while (!fin.eof())
+			while (util::simReplay::readParticles(fin, fileProps, x, y, z))
 			{
-				// allocate memory
-				x = new float[numParticles];
-				y = new float[numParticles];
-				z = new float[numParticles];
-				ptz = new int[numParticles];
-				heads = new int[ncell];
+				//. reset neighbors list
 				for (int i = 0; i < ncell; i++) 
 					heads[i] = -1; //.. init heads
 
-				util::simReplay::readParticles(fin, fileProps, x, y, z);
+				//if (!util::simReplay::readParticles(fin, fileProps, x, y, z)) break;
 				printf("\n%s: Frame %i read from %s", funcName.c_str(), numFrame++, ifname.str().c_str());
 
 				//.. construct linked list
@@ -520,8 +529,9 @@ namespace gofr {
 				}
 
 				//.. puts counts in g(r) using linked list
-				printf("\nCalculating ... ");
+				printf("\nCalculating ...\t\t\t");
 				float dx, dy, dz, r, rr;
+				sum = 0;
 				const float range2 = range*range;
 				for (int ic = 0; ic < nxcell; ic++){
 					for (int jc = 0; jc < nycell; jc++){
@@ -559,40 +569,47 @@ namespace gofr {
 						}
 					}
 				}
+				printf("done");
 
 				// open output and over-write
-				std::ofstream fcsv(foutBaseName + ".csv", std::ios::out | std::ios::trunc);
-				if (!fcsv.is_open()) // check for file being open
-					return 10;
+				//std::ofstream fcsv(foutBaseName + ".csv", std::ios::app);
+				//if (!fcsv.is_open()) // check for file being open
+					//return 10;
 
 				//.. write current average to file
+				printf("\nAppending output file ...\t");
 				float r1, r2, area;
 				const int length = G.size();
 				for (int i = 0; i < length; i++){
 					r1 = float(i)*binWidth;
 					r2 = float(i + 1)*binWidth;
 					area = _PI*(r2*r2 - r1*r1);
-					G[i] /= (float)sum;
-					G[i] *= 2.0f;
-					G[i] /= area;
-					fcsv << G[i]; // print value to file
+					G.at(i) /= (float)sum;
+					G.at(i) *= 2.0f;
+					G.at(i) /= area;
+					G.at(i) /= G.at(0); // starts at 1
+					fcsv << G.at(i); // print value to file
 					if (i != length - 1) // dont print comma in last col
 						fcsv << ", ";
 				}
-				fcsv.close(); // close file for until next frame
-
-				delete[] x;
-				delete[] y;
-				delete[] z;
-				delete[] ptz;
-				delete[] heads;
-				printf("\n%s: Frame memory deleted.", funcName.c_str());
+				fcsv << std::endl;
+				//fcsv.close(); // close file for until next frame
+				printf("done");
+				
+				
 			}
 			fin.close();
 			printf("\n%s: Input file closed.", funcName.c_str());
-		}
 
-		
+			printf("\nClearing memory ... ");
+			delete[] x; printf("x ");
+			delete[] y; printf("y ");
+			delete[] z; printf("z ");
+			delete[] ptz; printf("ptz ");
+			delete[] heads; printf("heads ");
+			printf("done");
+		}
+		fcsv.close();
 		printf("\n%s: Output files closed.", funcName.c_str());
 		return EXIT_SUCCESS;
 	}

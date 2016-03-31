@@ -165,10 +165,10 @@ namespace util {
 			str line;
 			if (!std::getline(fin, line)) return false; // atom number
 			const int atoms = (int)std::strtod(line.c_str(), NULL);
-			if (atoms != props.atoms()){ // check properties agree
-				printf("\nWarning: adjusting properties for frame");
-				props.atoms() = atoms;
-			}
+			//if (atoms != props.atoms()){ // check properties agree
+			//	printf("\nWarning: adjusting properties for frame");
+			//	props.atoms() = atoms;
+			//}
 			if (!std::getline(fin, line)) return false; // comment line
 			if (std::strcmp(line.c_str(), props.comment().c_str()) != 0){ // adjust comment if changed
 				props.comment(line);
@@ -208,21 +208,21 @@ namespace util {
 		//.. implement read lines
 		bool readLine(std::ifstream& fin, char& c, float& x, float& y, float& z){
 			str line;
-			if (!std::getline(fin, line)) return false;
+			if (!std::getline(fin, line) || line.length() == 0) return false;
 			sstrm row(line);
 			row >> c >> x >> y >> z;
 			return true;
 		}
 		bool readLine(std::ifstream& fin, char& c, float& x, float& y, float& z, float& C){
 			str line;
-			if (!std::getline(fin, line)) return false;
+			if (!std::getline(fin, line) || line.length() == 0) return false;
 			sstrm row(line);
 			row >> c >> x >> y >> z >> C;
 			return true;
 		}
 		bool readLine(std::ifstream& fin, char& c, float& x, float& y, float& z, float& vx, float& vy, float& vz){
 			str line;
-			if (!std::getline(fin, line)) return false;
+			if (!std::getline(fin, line) || line.length() == 0) return false;
 			sstrm row(line);
 			row >> c >> x >> y >> z >> vx >> vy >> vz;
 			return true;

@@ -60,8 +60,16 @@ delegator::delegator(int argc, char *argv[]){
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::SXYZC_3D, subargc, subarg));
 		}
+		else if (arg == "--msd-3d"){
+			subarg = grabsubargs(subargc, argv, i);
+			this->toDo.push_back(new Task(AnalysisTask::MSD_3D, subargc, subarg));
+		}
 
 		// v v v v v v 2D v v v v v v
+		else if (arg == "--vel-2d"){
+			subarg = grabsubargs(subargc, argv, i);
+			this->toDo.push_back(new Task(AnalysisTask::VGRID, subargc, subarg));
+		}
 		else if (arg == "--gcorr"){
 			subarg = grabsubargs(subargc, argv, i);
 			this->toDo.push_back(new Task(AnalysisTask::GCORR, subargc, subarg));
@@ -148,74 +156,6 @@ void delegator::assignThreadedFunctions(){
 		if (it->tsk != AnalysisTask::UNKNOWN)
 			it->thd = boost::thread(Implement.at(it->tsk), 
 			parseIntoSubStrings(it->arg));
-
-		/*switch (it->tsk){
-		case AnalysisTask::FOLLOW :
-			it->thd = boost::thread(&follow::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << follow::funcName <<"' thread.\n";
-			break;
-		case AnalysisTask::GCORR :
-			it->thd = boost::thread(&gcorr::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << gcorr::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::GOFR :
-			it->thd = boost::thread(&gofr::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << gofr::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::GTCORR :
-			it->thd = boost::thread(&gtcorr::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << gtcorr::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::HIGHLIGHT :
-			it->thd = boost::thread(&highlight::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << highlight::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::HISTO :
-			it->thd = boost::thread(&histo::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << histo::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::MOMENTUM :
-			it->thd = boost::thread(&momentum::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << momentum::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::PERSIST :
-			it->thd = boost::thread(&persistence::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << persistence::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::POFR :
-			it->thd = boost::thread(&pofr::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << pofr::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::PVT :
-			it->thd = boost::thread(&pvt::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << pvt::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::SHIFT2COM :
-			it->thd = boost::thread(&shift2com::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << shift2com::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::SVDEN :
-			it->thd = boost::thread(&svden::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << svden::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::SVT :
-			it->thd = boost::thread(&svt::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << svt::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::SXYZC :
-			it->thd = boost::thread(&sxyzc::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << sxyzc::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::VARDEN :
-			it->thd = boost::thread(&varden::calculate, parseIntoSubStrings(it->arg));
-			std::cout << "launching '" << varden::funcName << "' thread.\n";
-			break;
-		case AnalysisTask::UNKNOWN :
-			std::cout << "cannot launch thread for 'unknown' typed task.\n";
-			break;
-		default :
-			std::cout << "default thread launch is not supported.\n";
-		}*/
 	}
 }
 

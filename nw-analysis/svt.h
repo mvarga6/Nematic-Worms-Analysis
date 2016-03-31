@@ -35,7 +35,7 @@ namespace svt {
 	}
 
 	static int process_arg(std::string		&basename,
-		std::ofstream 	&fout,
+		std::string 	&foutbasename,
 		std::vector<std::string> argv,
 		double 			&range,
 		int				&sfid,
@@ -90,7 +90,8 @@ namespace svt {
 			}
 			else if ((arg == "-o") || (arg == "--output")){
 				if (i + 1 < argc){
-					fout.open(argv[i + 1]);
+					foutbasename = argv[i + 1];
+					//fout.open(argv[i + 1]);
 					i++;
 				}
 				else{
@@ -99,7 +100,8 @@ namespace svt {
 				}
 			}
 			else{
-				fout.open(funcName + ".csv");
+				foutbasename = funcName;
+				//fout.open(funcName + ".csv");
 				return 0;
 			}
 		}
@@ -144,17 +146,18 @@ namespace svt {
 
 		//std::vector<std::ifstream*> fin;
 		std::string finBaseName;
-		std::ofstream fout;
+		std::string foutBaseName(funcName);
+		//std::ofstream fout;
 
 		//.. user input parameters
 		double intRange = 5.0;
-		int	   startFileId = 1;
-		int	   endFileId = 1;
+		int	   startFileId = -1;
+		int	   endFileId = -1;
 		int     numFrame = 1;
 		float	totalOrderParameter = 0;
 
 		//.. process command line sub arguments
-		int process_arg_status = process_arg(finBaseName, fout, argv, intRange, startFileId, endFileId);
+		int process_arg_status = process_arg(finBaseName, foutBaseName, argv, intRange, startFileId, endFileId);
 		if (process_arg_status != 0) return process_arg_status;
 
 		//.. linked list parameters (for worms COM, not particles)
@@ -165,13 +168,22 @@ namespace svt {
 		int * ptz = { 0 };
 		int * heads = { 0 };
 
+		//.. open output file
+		std::ofstream fout(foutBaseName + ".csv", std::ios::out);
+		if (!fout.is_open()) return 10;
+
 		for (int fid = startFileId; fid <= endFileId; fid++)
 		{
-			//.. make ifstream and open
+			//.. construct name
 			std::ostringstream ifname;
-			ifname << finBaseName << fid << ".xyz";
+			ifname << finBaseName;
+			if (startFileId >= 0) ifname << fid; // add number if needed
+			ifname << ".xyz";
+			util::simReplay::properties fileProps; // file proerties
+			fileProps.getFrom(ifname.str()); // gather properties
+			fileProps.print(); // show properties
+			
 			std::ifstream fin(ifname.str(), std::ios::in);
-
 			if (!fin.is_open()){
 				std::cerr << "Error opening file '" << ifname.str() << "'\n"
 					<< "Check for correct input name and/or directory\n" << std::endl;
@@ -179,31 +191,37 @@ namespace svt {
 				return 20;
 			}
 			// Simulation parameters
-			int		numParticles;
-			int		numPerWorm;
-			int		numWorms;
-			double	numWorms2;
-			char	charTrash;
-			float	k2spring;
-			float	hx;
-			float	hy;
-			float	floatTrash;
-			float	intRange2 = intRange * intRange;
+			const int numParticles = fileProps.particles();
+			const int numPerWorm = fileProps.aggsize();
+			const int numWorms = numParticles / numPerWorm;
+			const double numWorms2 = numWorms * numWorms;
+			const float	hx = fileProps.hx();
+			const float	hy = fileProps.hy();
+			const float	intRange2 = intRange * intRange;
+			char charTrash; 
+			float floatTrash;
 
 			//.. loop through entire file
 			while (!fin.eof())
 			{
-				numParticles = 4; // Deals with case of black line at end of file.
-				fin >> numParticles;
-				fin >> numPerWorm >> k2spring >> hx >> hy;
-				numParticles -= 4;
+				//numParticles = 4; // Deals with case of black line at end of file.
+				int nparts = 0;
+				if(!(fin >> nparts)) break;
+				double cmt[9];
+				fin >> cmt[0];
+				fin >> charTrash;
+				for (int i = 1; i < 9; i++)
+					fin >> cmt[i];
+				//fin >> numParticles;
+				//fin >> numPerWorm >> k2spring >> hx >> hy;
+				//numParticles -= 4;
 
-				if (numParticles == 0) break;
+				if (nparts == 0) break;
 
-				numWorms = numParticles / numPerWorm;
-				numWorms2 = numWorms*numWorms;
-				float hxo2 = hx / 2.0;
-				float hyo2 = hy / 2.0;
+				//numWorms = numParticles / numPerWorm;
+				//numWorms2 = numWorms*numWorms;
+				const float hxo2 = hx / 2.0;
+				const float hyo2 = hy / 2.0;
 
 				//.. make linked list
 				nxcell = int(ceil(hx / dcell));
@@ -289,6 +307,10 @@ namespace svt {
 				float cos2Sum = 0;
 				float cosSinSum = 0;
 				float aveOver = 0;
+				std::vector<int> S_hist; // histogram of S values
+				const float SbinWidth = 1.0f / 50.0f;
+				for (int i = 0; i < 51; i++) // fixed 50 bin container
+					S_hist.push_back(0);
 
 				//.. calculate using linked list
 				std::cout << "Calculating ... \n";
@@ -319,6 +341,7 @@ namespace svt {
 							int iw = heads[scell];
 							while (iw >= 0)
 							{
+								float cos2Loc = 0, cosSinLoc = 0, aveOverLoc = 1.0f;
 								int jw = heads[scnab];
 								while (jw >= 0)
 								{
@@ -343,10 +366,21 @@ namespace svt {
 										if (dtheta > _PI) dtheta -= _2PI;
 										if (dtheta < -_PI) dtheta += _2PI;
 
-										cos2Sum += std::cos(dtheta)*std::cos(dtheta);
-										cosSinSum += std::cos(dtheta)*std::sin(dtheta);
+										const float cos2 = std::cos(dtheta)*std::cos(dtheta);
+										const float cossin = std::cos(dtheta)*std::sin(dtheta);
+										cos2Sum += cos2;
+										cosSinSum += cossin;
+										cos2Loc += cos2;
+										cosSinLoc += cossin;
+										
 										aveOver += 1;
+										aveOverLoc += 1;
 									}
+									const float aveCos2Loc = cos2Loc / aveOverLoc;
+									const float aveCosSinLoc = cosSinLoc / aveOverLoc;
+									const float Slocal = 2 * std::sqrt((aveCos2Loc - 0.5)*(aveCos2Loc - 0.5) + aveCosSinLoc*aveCosSinLoc);
+									const int Sbin = int(Slocal / SbinWidth);
+									if (aveOverLoc > 1) S_hist.at(Sbin) += 1;
 
 									jw = ptz[jw];
 								}
@@ -364,7 +398,9 @@ namespace svt {
 
 				std::cout << "S = " << orderParameter << std::endl;
 				fout.flush();
-				fout << numFrame++ << ", " << orderParameter << std::endl;
+				fout << numFrame++ << ", " << orderParameter << ", hist";
+				for (auto it : S_hist) fout << ", " << it;
+				fout << std::endl;
 
 				// Handle Dynamic Arrays
 				delete[] comx;
